@@ -12,11 +12,13 @@ import RectangleROI from "./RectangleROI";
 import Length from "./Length";
 import PlanarFreehandROI from "./PlanarFreehandROI";
 import Probe from "./Probe";
+import DICOMSRDisplay from "./DICOMSRDisplay";
 
 import * as Segmentation from "./Segmentation";
 import * as RTSS from "./RTStruct";
 
 const Cornerstone3DSR = {
+    DICOMSRDisplay,
     Bidirectional,
     CobbAngle,
     Angle,
