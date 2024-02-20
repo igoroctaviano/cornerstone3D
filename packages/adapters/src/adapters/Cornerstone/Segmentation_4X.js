@@ -68,6 +68,7 @@ function generateSegmentation(images, inputLabelmaps3D, userOptions = {}) {
  * @returns {object} The filled segmentation object.
  */
 function fillSegmentation(segmentation, inputLabelmaps3D, userOptions = {}) {
+    console.debug("fill seg !");
     const options = Object.assign(
         {},
         generateSegmentationDefaultOptions,
@@ -707,15 +708,12 @@ function findReferenceSourceImageId(
             }
         }
 
-        if (DerivationImageSequence) {
-            frameSourceImageSequence =
-                DerivationImageSequence.SourceImageSequence;
-            if (Array.isArray(frameSourceImageSequence)) {
-                if (frameSourceImageSequence.length !== 0) {
-                    frameSourceImageSequence = frameSourceImageSequence[0];
-                } else {
-                    frameSourceImageSequence = undefined;
-                }
+        frameSourceImageSequence = DerivationImageSequence.SourceImageSequence;
+        if (Array.isArray(frameSourceImageSequence)) {
+            if (frameSourceImageSequence.length !== 0) {
+                frameSourceImageSequence = frameSourceImageSequence[0];
+            } else {
+                frameSourceImageSequence = undefined;
             }
         }
     } else if (SourceImageSequence && SourceImageSequence.length !== 0) {
@@ -748,6 +746,18 @@ function findReferenceSourceImageId(
             tolerance
         );
     }
+
+    if (imageId === undefined) {
+        imageId = getImageIdbyGeometry(
+            FrameOfReferenceUID,
+            PerFrameFunctionalGroup,
+            imageIds,
+            metadataProvider,
+            tolerance
+        );
+    }
+
+    console.debug("tolerance", tolerance);
 
     return imageId;
 }
@@ -1499,6 +1509,53 @@ function getImageIdOfSourceImagebyGeometry(
             sourceImageMetadata.FrameOfReferenceUID !== FrameOfReferenceUID ||
             sourceImageMetadata.SeriesInstanceUID !==
                 ReferencedSeriesInstanceUID
+        ) {
+            continue;
+        }
+
+        if (
+            compareArrays(
+                PerFrameFunctionalGroup.PlanePositionSequence[0]
+                    .ImagePositionPatient,
+                sourceImageMetadata.ImagePositionPatient,
+                tolerance
+            )
+        ) {
+            return imageIds[imageIdsIndexc];
+        }
+    }
+}
+
+function getImageIdbyGeometry(
+    FrameOfReferenceUID,
+    PerFrameFunctionalGroup,
+    imageIds,
+    metadataProvider,
+    tolerance
+) {
+    if (
+        PerFrameFunctionalGroup.PlanePositionSequence === undefined ||
+        PerFrameFunctionalGroup.PlanePositionSequence[0] === undefined ||
+        PerFrameFunctionalGroup.PlanePositionSequence[0]
+            .ImagePositionPatient === undefined
+    ) {
+        return undefined;
+    }
+
+    for (
+        let imageIdsIndexc = 0;
+        imageIdsIndexc < imageIds.length;
+        ++imageIdsIndexc
+    ) {
+        const sourceImageMetadata = metadataProvider.get(
+            "instance",
+            imageIds[imageIdsIndexc]
+        );
+
+        if (
+            sourceImageMetadata === undefined ||
+            sourceImageMetadata.ImagePositionPatient === undefined ||
+            sourceImageMetadata.FrameOfReferenceUID !== FrameOfReferenceUID
         ) {
             continue;
         }
