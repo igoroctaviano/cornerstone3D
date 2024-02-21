@@ -13,6 +13,7 @@ import Length from "./Length";
 import PlanarFreehandROI from "./PlanarFreehandROI";
 import Probe from "./Probe";
 import DICOMSRDisplay from "./DICOMSRDisplay";
+import UltrasoundDirectional from "./UltrasoundDirectional";
 
 import * as Segmentation from "./Segmentation";
 import * as RTSS from "./RTStruct";
@@ -29,6 +30,7 @@ const Cornerstone3DSR = {
     ArrowAnnotate,
     Probe,
     PlanarFreehandROI,
+    UltrasoundDirectional,
     MeasurementReport,
     CodeScheme,
     CORNERSTONE_3D_TAG
