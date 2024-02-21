@@ -367,7 +367,7 @@ function _setLabelmapColorAndOpacity(
         : outlineWidth;
   }
 
-  actor.getProperty().setLabelOutlineThickness(outlineWidths);
+  //actor.getProperty().setLabelOutlineThickness(outlineWidths);
 
   // Set visibility based on whether actor visibility is specifically asked
   // to be turned on/off (on by default) AND whether is is in active but

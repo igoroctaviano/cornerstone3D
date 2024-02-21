@@ -33,6 +33,7 @@ import PlanarFreehandContourSegmentationTool from './annotation/PlanarFreehandCo
 import LivewireContourTool from './annotation/LivewireContourTool';
 import LivewireContourSegmentationTool from './annotation/LivewireContourSegmentationTool';
 import ArrowAnnotateTool from './annotation/ArrowAnnotateTool';
+import DICOMSRDisplayTool from './annotation/DICOMSRDisplayTool';
 import AngleTool from './annotation/AngleTool';
 import CobbAngleTool from './annotation/CobbAngleTool';
 import UltrasoundDirectionalTool from './annotation/UltrasoundDirectionalTool';
@@ -88,6 +89,7 @@ export {
   LivewireContourTool,
   LivewireContourSegmentationTool,
   ArrowAnnotateTool,
+  DICOMSRDisplayTool,
   AngleTool,
   CobbAngleTool,
   UltrasoundDirectionalTool,

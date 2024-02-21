@@ -173,19 +173,42 @@ export default class MeasurementReport {
         const NUMGroup = contentSequenceArr.find(
             group => group.ValueType === "NUM"
         );
-        const SCOORDGroup = toArray(NUMGroup.ContentSequence).find(
-            group => group.ValueType === "SCOORD"
+        let SCOORDGroup;
+        if (NUMGroup) {
+            SCOORDGroup = toArray(NUMGroup.ContentSequence).find(
+                group => group.ValueType === "SCOORD"
+            );
+        }
+        const SCOORD3DGroup = toArray(contentSequenceArr).find(
+            group => group.ValueType === "SCOORD3D"
         );
-        const { ReferencedSOPSequence } = SCOORDGroup.ContentSequence;
-        const { ReferencedSOPInstanceUID, ReferencedFrameNumber } =
-            ReferencedSOPSequence;
 
-        const referencedImageId =
-            sopInstanceUIDToImageIdMap[ReferencedSOPInstanceUID];
-        const imagePlaneModule = metadata.get(
-            "imagePlaneModule",
-            referencedImageId
-        );
+        let referencedImageId,
+            imagePlaneModule,
+            ReferencedFrameNumber,
+            ReferencedSOPInstanceUID,
+            ReferencedSOPSequence;
+        if (SCOORDGroup) {
+            ReferencedSOPSequence =
+                SCOORDGroup.ContentSequence.ReferencedSOPSequence;
+            ReferencedFrameNumber = ReferencedSOPSequence.ReferencedFrameNumber;
+            ReferencedSOPInstanceUID =
+                ReferencedSOPSequence.ReferencedSOPInstanceUID;
+            referencedImageId =
+                sopInstanceUIDToImageIdMap[ReferencedSOPInstanceUID];
+            imagePlaneModule = metadata.get(
+                "imagePlaneModule",
+                referencedImageId
+            );
+        }
+        if (SCOORD3DGroup) {
+            // random image
+            ReferencedSOPInstanceUID = Object.keys(
+                sopInstanceUIDToImageIdMap
+            )[0];
+            referencedImageId =
+                sopInstanceUIDToImageIdMap[ReferencedSOPInstanceUID];
+        }
 
         const finding = findingGroup
             ? addAccessors(findingGroup.ConceptCodeSequence)
@@ -202,7 +225,9 @@ export default class MeasurementReport {
                 metadata: {
                     toolName: toolType,
                     referencedImageId,
-                    FrameOfReferenceUID: imagePlaneModule.frameOfReferenceUID,
+                    FrameOfReferenceUID: SCOORDGroup
+                        ? imagePlaneModule.frameOfReferenceUID
+                        : SCOORD3DGroup.ReferencedFrameOfReferenceUID,
                     label: ""
                 },
                 data: undefined
@@ -221,6 +246,7 @@ export default class MeasurementReport {
             defaultState,
             NUMGroup,
             SCOORDGroup,
+            SCOORD3DGroup,
             ReferencedSOPSequence,
             ReferencedSOPInstanceUID,
             ReferencedFrameNumber

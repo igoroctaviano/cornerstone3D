@@ -315,6 +315,27 @@ export type InterpolationROIAnnotation = ContourAnnotation &
     isInterpolationUpdate?: boolean;
   };
 
+export interface DICOMSRDisplayAnnotation extends Annotation {
+  data: {
+    text: string;
+    handles: {
+      points: Types.Point3[];
+      arrowFirst: boolean;
+      activeHandleIndex: number | null;
+      textBox: {
+        hasMoved: boolean;
+        worldPosition: Types.Point3;
+        worldBoundingBox: {
+          topLeft: Types.Point3;
+          topRight: Types.Point3;
+          bottomLeft: Types.Point3;
+          bottomRight: Types.Point3;
+        };
+      };
+    };
+  };
+}
+
 export interface ArrowAnnotation extends Annotation {
   data: {
     text: string;
