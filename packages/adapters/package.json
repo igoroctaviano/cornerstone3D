@@ -26,6 +26,7 @@
         "build:examples": "npm run build && npx cpx 'dist/**/*.{js,map}' examples/js",
         "build:update-api": "yarn run build && api-extractor run --local",
         "start": "rollup -c -w",
+        "dev": "rollup --watch  -c rollup.config.mjs",
         "format": "prettier --write 'src/**/*.js' 'test/**/*.js'",
         "lint": "eslint --fix ."
     },

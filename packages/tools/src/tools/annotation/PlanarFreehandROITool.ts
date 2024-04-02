@@ -345,7 +345,7 @@ class PlanarFreehandROITool extends AnnotationTool {
       this.getToolName()
     );
 
-    if (annotation.data.isOpenContour) {
+    if (annotation.data.closed === false) {
       this.activateOpenContourEdit(evt, annotation, viewportIdsToRender);
     } else {
       this.activateClosedContourEdit(evt, annotation, viewportIdsToRender);
@@ -391,7 +391,7 @@ class PlanarFreehandROITool extends AnnotationTool {
       previousPoint = p2;
     }
 
-    if (annotation.data.isOpenContour) {
+    if (annotation.data.closed === true) {
       // Contour is open, don't check last point to first point.
       return false;
     }

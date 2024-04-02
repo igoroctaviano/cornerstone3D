@@ -342,12 +342,12 @@ export default class MeasurementReport {
         metadata,
         hooks
     ) {
-        // For now, bail out if the dataset is not a TID1500 SR with length measurements
-        if (dataset.ContentTemplateSequence.TemplateIdentifier !== "1500") {
-            throw new Error(
-                "This package can currently only interpret DICOM SR TID 1500"
-            );
-        }
+        // // For now, bail out if the dataset is not a TID1500 SR with length measurements
+        // if (dataset.ContentTemplateSequence.TemplateIdentifier !== "1500") {
+        //     throw new Error(
+        //         "This package can currently only interpret DICOM SR TID 1500"
+        //     );
+        // }
 
         const REPORT = "Imaging Measurements";
         const GROUP = "Measurement Group";

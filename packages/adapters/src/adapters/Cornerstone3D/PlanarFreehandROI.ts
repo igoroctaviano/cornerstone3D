@@ -80,7 +80,7 @@ class PlanarFreehandROI {
 
         state.annotation.data = {
             polyline: worldCoords,
-            isOpenContour,
+            closed: !isOpenContour,
             handles: {
                 points,
                 activeHandleIndex: null,
@@ -96,7 +96,9 @@ class PlanarFreehandROI {
 
     static getTID300RepresentationArguments(tool, worldToImageCoords) {
         const { data, finding, findingSites, metadata } = tool;
-        const { isOpenContour, polyline } = data;
+        const { closed, polyline } = data;
+
+        const isOpenContour = !closed;
 
         const { referencedImageId } = metadata;
 
