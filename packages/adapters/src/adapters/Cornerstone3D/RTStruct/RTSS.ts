@@ -320,8 +320,8 @@ function _initializeDataset(rtMetadata, imgMetadata, metadataProvider) {
         StructureSetName: rtMetadata.name || "",
         ReferringPhysicianName: "",
         OperatorsName: "",
-        StructureSetDate: DicomMetaDictionary.date(),
-        StructureSetTime: DicomMetaDictionary.time(),
+        // StructureSetDate: DicomMetaDictionary.date(),
+        // StructureSetTime: DicomMetaDictionary.time(),
         _meta: null
     };
 }

@@ -13,7 +13,7 @@ class RectangleROIStartEndThreshold {
     return projectionPoints.map((point, index) => {
       const ContourData = getPointData(point);
       const ContourImageSequence = getContourImageSequence(
-        projectionPointsImageIds[index],
+        projectionPointsImageIds[0],
         metadataProvider
       );
 

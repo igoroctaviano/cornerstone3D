@@ -22,11 +22,11 @@ export default function getPatientModule(imageId, metadataProvider) {
         PatientID: patientModule.patientId,
         PatientName: patientModule.patientName,
         PatientBirthDate: "",
-        PatientAge: patientStudyModule.patientAge,
-        PatientSex: patientDemographicModule.patientSex,
+        //PatientAge: patientStudyModule.patientAge,
+        PatientSex: patientDemographicModule?.patientSex,
         PatientWeight: patientStudyModule.patientWeight,
-        StudyDate: generalStudyModule.studyDate,
-        StudyTime: generalStudyModule.studyTime,
+        // StudyDate: generalStudyModule.studyDate,
+        // StudyTime: generalStudyModule.studyTime,
         StudyID: "ToDo",
         AccessionNumber: generalStudyModule.accessionNumber
     };

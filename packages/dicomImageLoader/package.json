@@ -52,7 +52,7 @@
     "test:firefox": "karma start config/karma/karma-firefox.js",
     "test:watch": "karma start config/karma/karma-watch.js",
     "watch": "npm run clean && shx mkdir dist && npm run webpack:watch",
-    "dev": "npm run webpack:dev",
+    "dev": "tsc --project ./tsconfig.esm.json --watch",
     "webpack:dev": "webpack serve --progress --config .webpack/webpack-dev.js",
     "webpack:dynamic-import": "webpack --progress --config .webpack/webpack-dynamic-import",
     "webpack:bundle": "webpack --progress --config .webpack/webpack-bundle",
