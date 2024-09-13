@@ -29,19 +29,12 @@ class PlanarFreehandContourSegmentationTool extends PlanarFreehandROITool {
 
   static getContourSequence(toolData, metadataProvider) {
     const { data } = toolData;
-    // const { projectionPoints, projectionPointsImageIds } = data.cachedStats;
-    let { polyline: points } = data.contour;
-
-    // points = points.map((worldPos) =>
-    //   utilities.worldToImageCoords(
-    //     toolData.metadata.referencedImageId,
-    //     worldPos
-    //   )
-    // );
+    const { polyline: points } = data.contour;
 
     function getPointData(points) {
+      const flatPoints = points.flat();
       // reduce the precision of the points to 2 decimal places
-      const pointsArrayWithPrecision = points.map((point) => {
+      const pointsArrayWithPrecision = flatPoints.map((point) => {
         return point.toFixed(2);
       });
       return pointsArrayWithPrecision;
@@ -55,9 +48,9 @@ class PlanarFreehandContourSegmentationTool extends PlanarFreehandROITool {
       };
     }
 
-    const ContourData = points.flat(); //getPointData(points);
+    const ContourData = getPointData(points);
     const ContourImageSequence = getContourImageSequence(
-      toolData.metadata.referencedImageId, //projectionPointsImageIds[index],
+      toolData.metadata.referencedImageId,
       metadataProvider
     );
 
