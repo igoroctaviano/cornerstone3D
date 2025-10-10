@@ -115,16 +115,19 @@ export default function mouseDown(evt: EventTypes.MouseDownEventType) {
   const isMultiSelect = !!evt.detail.event.shiftKey;
 
   // If there are annotation tools whose handle is near the mouse, select the first one
-  // that isn't locked. If there's only one annotation tool, select it.
+  // that isn't locked and is visible.
   if (annotationToolsWithMoveableHandles.length > 0) {
-    const { tool, annotation, handle } = getAnnotationForSelection(
+    const annotationForSelection = getAnnotationForSelection(
       annotationToolsWithMoveableHandles
     ) as ToolsWithMoveableHandles;
 
-    toggleAnnotationSelection(annotation.annotationUID, isMultiSelect);
-    tool.handleSelectedCallback(evt, annotation, handle, 'Mouse');
+    if (annotationForSelection) {
+      const { tool, annotation, handle } = annotationForSelection;
+      toggleAnnotationSelection(annotation.annotationUID, isMultiSelect);
+      tool.handleSelectedCallback(evt, annotation, handle, 'Mouse');
 
-    return;
+      return;
+    }
   }
 
   // If there were no annotation tools whose handle was near the mouse, try to check
@@ -137,16 +140,19 @@ export default function mouseDown(evt: EventTypes.MouseDownEventType) {
   );
 
   // If there are annotation tools that are interactable, select the first one
-  // that isn't locked. If there's only one annotation tool, select it.
+  // that isn't locked and is visible.
   if (moveableAnnotationTools.length > 0) {
-    const { tool, annotation } = getAnnotationForSelection(
+    const annotationForSelection = getAnnotationForSelection(
       moveableAnnotationTools
     );
 
-    toggleAnnotationSelection(annotation.annotationUID, isMultiSelect);
-    tool.toolSelectedCallback(evt, annotation, 'Mouse', canvasCoords);
+    if (annotationForSelection) {
+      const { tool, annotation } = annotationForSelection;
+      toggleAnnotationSelection(annotation.annotationUID, isMultiSelect);
+      tool.toolSelectedCallback(evt, annotation, 'Mouse', canvasCoords);
 
-    return;
+      return;
+    }
   }
 
   // Run the postMouseDownCallback for the active tool if it exists
@@ -164,26 +170,21 @@ export default function mouseDown(evt: EventTypes.MouseDownEventType) {
 
 /**
  * If there are multiple annotation tools, return the first one that isn't locked neither hidden.
- * If there's only one annotation tool, return it
+ * If there's only one annotation tool, return it only if it's unlocked and visible.
  * @param annotationTools - An array of tools and annotation.
- * @returns The candidate for selection
+ * @returns The candidate for selection, or undefined if all annotations are locked or hidden
  */
 function getAnnotationForSelection(
   toolsWithMovableHandles: ToolAnnotationPair[]
-): ToolAnnotationPair {
-  if (toolsWithMovableHandles.length > 1) {
-    const unlockAndVisibleAnnotation = toolsWithMovableHandles.find((item) => {
-      const isUnlocked = !isAnnotationLocked(item.annotation.annotationUID);
-      const isVisible = isAnnotationVisible(item.annotation.annotationUID);
-      return isUnlocked && isVisible;
-    });
+): ToolAnnotationPair | undefined {
+  // Find the first annotation that is both unlocked and visible
+  const unlockAndVisibleAnnotation = toolsWithMovableHandles.find((item) => {
+    const isUnlocked = !isAnnotationLocked(item.annotation.annotationUID);
+    const isVisible = isAnnotationVisible(item.annotation.annotationUID);
+    return isUnlocked && isVisible;
+  });
 
-    if (unlockAndVisibleAnnotation) {
-      return unlockAndVisibleAnnotation;
-    }
-  }
-
-  return toolsWithMovableHandles[0];
+  return unlockAndVisibleAnnotation;
 }
 
 /**

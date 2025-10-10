@@ -82,16 +82,19 @@ export default function touchStart(evt: EventTypes.TouchStartEventType) {
   const isMultiSelect = false;
 
   // If there are annotation tools whose handle is near the touch, select the first one
-  // that isn't locked. If there's only one annotation tool, select it.
+  // that isn't locked and is visible.
   if (annotationToolsWithMoveableHandles.length > 0) {
-    const { tool, annotation, handle } = getAnnotationForSelection(
+    const annotationForSelection = getAnnotationForSelection(
       annotationToolsWithMoveableHandles
     ) as ToolsWithMoveableHandles;
 
-    toggleAnnotationSelection(annotation.annotationUID, isMultiSelect);
-    tool.handleSelectedCallback(evt, annotation, handle, 'Touch');
+    if (annotationForSelection) {
+      const { tool, annotation, handle } = annotationForSelection;
+      toggleAnnotationSelection(annotation.annotationUID, isMultiSelect);
+      tool.handleSelectedCallback(evt, annotation, handle, 'Touch');
 
-    return;
+      return;
+    }
   }
 
   // If there were no annotation tools whose handle was near the touch, try to check
@@ -104,16 +107,19 @@ export default function touchStart(evt: EventTypes.TouchStartEventType) {
   );
 
   // If there are annotation tools that are interactable, select the first one
-  // that isn't locked. If there's only one annotation tool, select it.
+  // that isn't locked and is visible.
   if (moveableAnnotationTools.length > 0) {
-    const { tool, annotation } = getAnnotationForSelection(
+    const annotationForSelection = getAnnotationForSelection(
       moveableAnnotationTools
     );
 
-    toggleAnnotationSelection(annotation.annotationUID, isMultiSelect);
-    tool.toolSelectedCallback(evt, annotation, 'Touch', canvasCoords);
+    if (annotationForSelection) {
+      const { tool, annotation } = annotationForSelection;
+      toggleAnnotationSelection(annotation.annotationUID, isMultiSelect);
+      tool.toolSelectedCallback(evt, annotation, 'Touch', canvasCoords);
 
-    return;
+      return;
+    }
   }
 
   // Run the postTouchStartCallback for the active tool if it exists
@@ -131,22 +137,21 @@ export default function touchStart(evt: EventTypes.TouchStartEventType) {
 
 /**
  * If there are multiple annotation tools, return the first one that isn't locked neither hidden.
- * If there's only one annotation tool, return it
+ * If there's only one annotation tool, return it only if it's unlocked and visible.
  * @param annotationTools - An array of tools and annotation.
- * @returns The candidate for selection
+ * @returns The candidate for selection, or undefined if all annotations are locked or hidden
  */
 function getAnnotationForSelection(
   toolsWithMovableHandles: ToolAnnotationPair[]
-): ToolAnnotationPair {
-  return (
-    (toolsWithMovableHandles.length > 1 &&
-      toolsWithMovableHandles.find(
-        (item) =>
-          !isAnnotationLocked(item.annotation.annotationUID) &&
-          isAnnotationVisible(item.annotation.annotationUID)
-      )) ||
-    toolsWithMovableHandles[0]
-  );
+): ToolAnnotationPair | undefined {
+  // Find the first annotation that is both unlocked and visible
+  const unlockAndVisibleAnnotation = toolsWithMovableHandles.find((item) => {
+    const isUnlocked = !isAnnotationLocked(item.annotation.annotationUID);
+    const isVisible = isAnnotationVisible(item.annotation.annotationUID);
+    return isUnlocked && isVisible;
+  });
+
+  return unlockAndVisibleAnnotation;
 }
 
 /**

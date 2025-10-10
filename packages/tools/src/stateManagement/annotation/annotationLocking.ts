@@ -58,6 +58,21 @@ function getAnnotationsLocked(): Array<string> {
  * @returns A boolean value.
  */
 function isAnnotationLocked(annotationUID: string): boolean {
+  const annotation = getAnnotation(annotationUID);
+  if (
+    annotation &&
+    annotation.isLocked === true &&
+    !globalLockedAnnotationUIDsSet.has(annotationUID)
+  ) {
+    lock(annotationUID, globalLockedAnnotationUIDsSet, makeEventDetail());
+  }
+  if (
+    annotation &&
+    annotation.isLocked === false &&
+    globalLockedAnnotationUIDsSet.has(annotationUID)
+  ) {
+    unlock(annotationUID, globalLockedAnnotationUIDsSet, makeEventDetail());
+  }
   return globalLockedAnnotationUIDsSet.has(annotationUID);
 }
 

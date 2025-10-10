@@ -34,6 +34,7 @@ import type {
   AnnotationRenderContext,
 } from '../../types';
 import { triggerAnnotationModified } from '../../stateManagement/annotation/helpers/state';
+import { isAnnotationLocked } from '../../stateManagement/annotation/annotationLocking';
 import { drawLinkedTextBox } from '../../drawingSvg';
 import type {
   ContourAnnotation,
@@ -327,6 +328,11 @@ class PlanarFreehandROITool extends ContourSegmentationBaseTool {
     const eventDetail = evt.detail;
     const { element } = eventDetail;
 
+    // Do not allow editing if the annotation is locked
+    if (isAnnotationLocked(annotation.annotationUID)) {
+      return;
+    }
+
     const viewportIdsToRender = getViewportIdsWithToolToRender(
       element,
       this.getToolName()
@@ -349,6 +355,11 @@ class PlanarFreehandROITool extends ContourSegmentationBaseTool {
   ): void => {
     const eventDetail = evt.detail;
     const { element } = eventDetail;
+
+    // Do not allow editing if the annotation is locked
+    if (isAnnotationLocked(annotation.annotationUID)) {
+      return;
+    }
 
     const viewportIdsToRender = getViewportIdsWithToolToRender(
       element,
