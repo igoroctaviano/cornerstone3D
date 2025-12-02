@@ -3319,15 +3319,11 @@ class StackViewport extends Viewport {
       Object.assign(reference, referenceData);
     }
 
-    // Add series instance UID from image metadata if available
-    // This enables display-set based annotation filtering
     if (this.imageIds?.length > 0) {
-      // Try to get from 'instance' metadata module first (OHIF stores it here)
       const instance = metaData.get('instance', referencedImageId);
       if (instance?.SeriesInstanceUID) {
         reference.seriesInstanceUID = instance.SeriesInstanceUID;
       } else {
-        // Fallback: try imagePlaneModule
         const imagePlaneModule = metaData.get(
           'imagePlaneModule',
           referencedImageId

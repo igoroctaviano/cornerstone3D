@@ -638,13 +638,11 @@ abstract class BaseVolumeViewport extends Viewport {
       target.volumeId = volumeId;
     }
 
-    // Add series instance UID from volume metadata for annotation filtering
     if (volumeId) {
       const volume = cache.getVolume(volumeId);
       if (volume?.metadata?.SeriesInstanceUID) {
         target.seriesInstanceUID = volume.metadata.SeriesInstanceUID;
       } else if (volume?.imageIds?.length > 0) {
-        // Fallback: get from first image's instance metadata
         const firstImageId = volume.imageIds[0];
         const instance = metaData.get('instance', firstImageId);
         if (instance?.SeriesInstanceUID) {

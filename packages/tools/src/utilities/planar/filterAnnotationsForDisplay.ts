@@ -19,9 +19,7 @@ export default function filterAnnotationsForDisplay(
   annotations: Annotations,
   filterOptions: Types.ReferenceCompatibleOptions = {}
 ): Annotations {
-  // Handle display set filtering mode (more restrictive - same series only)
   if (filterOptions.byDisplaySet) {
-    // First filter by slice if it's a volume viewport
     let sliceFilteredAnnotations = annotations;
     if (viewport instanceof VolumeViewport) {
       const camera = viewport.getCamera();
@@ -34,7 +32,6 @@ export default function filterAnnotationsForDisplay(
       );
     }
 
-    // Then filter by display set/series
     const result = sliceFilteredAnnotations.filter((annotation) => {
       if (!annotation.isVisible) {
         return false;
@@ -42,7 +39,6 @@ export default function filterAnnotationsForDisplay(
 
       const annotationMetadata = annotation.metadata;
 
-      // Match by series instance UID (most reliable for display set filtering)
       if (
         filterOptions.seriesInstanceUID &&
         annotationMetadata.seriesInstanceUID
@@ -53,7 +49,6 @@ export default function filterAnnotationsForDisplay(
         );
       }
 
-      // Fallback: match by display set UID if provided
       if (
         filterOptions.displaySetInstanceUID &&
         annotationMetadata.displaySetInstanceUID
@@ -64,7 +59,6 @@ export default function filterAnnotationsForDisplay(
         );
       }
 
-      // Fallback: match by referenced image (for stack viewports)
       if (annotationMetadata.referencedImageId) {
         if (viewport instanceof StackViewport) {
           const currentImageId = viewport.getCurrentImageId();
@@ -81,22 +75,18 @@ export default function filterAnnotationsForDisplay(
         }
       }
 
-      // If no matching criteria found, don't show the annotation
       return false;
     });
 
     return result;
   }
 
-  // Default: Frame of Reference filtering
-  // For Volume viewports: filter by slice within the same frame of reference
   if (viewport instanceof VolumeViewport) {
     const camera = viewport.getCamera();
 
     const { spacingInNormalDirection } =
       csUtils.getTargetVolumeAndSpacingInNormalDir(viewport, camera);
 
-    // Get data with same normal and within the same slice
     return filterAnnotationsWithinSlice(
       annotations,
       camera,
@@ -104,12 +94,9 @@ export default function filterAnnotationsForDisplay(
     );
   }
 
-  // For Stack viewports in frame of reference mode:
-  // Show annotations from ALL images that share the same frame of reference
   if (viewport instanceof StackViewport) {
     const viewportFrameOfReferenceUID = viewport.getFrameOfReferenceUID();
 
-    // Filter by frame of reference - show all annotations that share the same FoR
     return annotations.filter((annotation) => {
       if (!annotation.isVisible) {
         return false;
@@ -118,14 +105,11 @@ export default function filterAnnotationsForDisplay(
         return true;
       }
 
-      // Check if annotation has the same frame of reference
       const annotationFrameOfReferenceUID =
         annotation.metadata?.FrameOfReferenceUID;
       return annotationFrameOfReferenceUID === viewportFrameOfReferenceUID;
     });
   }
-
-  // Fallback: use isReferenceViewable (should not reach here for Stack/Volume viewports)
   return annotations.filter((annotation) => {
     if (!annotation.isVisible) {
       return false;

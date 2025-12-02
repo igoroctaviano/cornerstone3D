@@ -73,12 +73,10 @@ abstract class AnnotationDisplayTool extends BaseTool {
     const enabledElement = getEnabledElement(element);
     const { viewport } = enabledElement;
 
-    // Check for OHIF annotation display mode configuration
     const filterOptions: Types.ReferenceCompatibleOptions = {};
 
     const annotationDisplayMode = element.dataset?.annotationDisplayMode;
     if (annotationDisplayMode === 'displaySet') {
-      // Enable display-set filtering mode
       filterOptions.byDisplaySet = true;
       filterOptions.displaySetInstanceUID =
         element.dataset?.displaySetInstanceUID;
