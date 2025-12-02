@@ -39,26 +39,6 @@ export default function filterAnnotationsForDisplay(
 
       const annotationMetadata = annotation.metadata;
 
-      if (
-        filterOptions.seriesInstanceUID &&
-        annotationMetadata.seriesInstanceUID
-      ) {
-        return (
-          annotationMetadata.seriesInstanceUID ===
-          filterOptions.seriesInstanceUID
-        );
-      }
-
-      if (
-        filterOptions.displaySetInstanceUID &&
-        annotationMetadata.displaySetInstanceUID
-      ) {
-        return (
-          annotationMetadata.displaySetInstanceUID ===
-          filterOptions.displaySetInstanceUID
-        );
-      }
-
       if (annotationMetadata.referencedImageId) {
         if (viewport instanceof StackViewport) {
           const currentImageId = viewport.getCurrentImageId();

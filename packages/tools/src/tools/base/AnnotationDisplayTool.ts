@@ -78,9 +78,6 @@ abstract class AnnotationDisplayTool extends BaseTool {
     const annotationDisplayMode = element.dataset?.annotationDisplayMode;
     if (annotationDisplayMode === 'displaySet') {
       filterOptions.byDisplaySet = true;
-      filterOptions.displaySetInstanceUID =
-        element.dataset?.displaySetInstanceUID;
-      filterOptions.seriesInstanceUID = element.dataset?.seriesInstanceUID;
     }
 
     return filterAnnotationsForDisplay(viewport, annotations, filterOptions);
