@@ -3322,38 +3322,19 @@ class StackViewport extends Viewport {
     // Add series instance UID from image metadata if available
     // This enables display-set based annotation filtering
     if (this.imageIds?.length > 0) {
-      try {
-        // Try to get from 'instance' metadata module first (OHIF stores it here)
-        const instance = metaData.get('instance', referencedImageId);
-        if (instance?.SeriesInstanceUID) {
-          reference.seriesInstanceUID = instance.SeriesInstanceUID;
-          console.log(
-            '[StackViewport.getViewReference] ✅ Set seriesInstanceUID from instance:',
-            reference.seriesInstanceUID
-          );
-        } else {
-          // Fallback: try imagePlaneModule
-          const imagePlaneModule = metaData.get(
-            'imagePlaneModule',
-            referencedImageId
-          );
-          if (imagePlaneModule?.SeriesInstanceUID) {
-            reference.seriesInstanceUID = imagePlaneModule.SeriesInstanceUID;
-            console.log(
-              '[StackViewport.getViewReference] ✅ Set seriesInstanceUID from imagePlaneModule:',
-              reference.seriesInstanceUID
-            );
-          } else {
-            console.warn(
-              '[StackViewport.getViewReference] ⚠️ No SeriesInstanceUID found in metadata'
-            );
-          }
-        }
-      } catch (error) {
-        console.error(
-          '[StackViewport.getViewReference] ❌ Error getting metadata:',
-          error
+      // Try to get from 'instance' metadata module first (OHIF stores it here)
+      const instance = metaData.get('instance', referencedImageId);
+      if (instance?.SeriesInstanceUID) {
+        reference.seriesInstanceUID = instance.SeriesInstanceUID;
+      } else {
+        // Fallback: try imagePlaneModule
+        const imagePlaneModule = metaData.get(
+          'imagePlaneModule',
+          referencedImageId
         );
+        if (imagePlaneModule?.SeriesInstanceUID) {
+          reference.seriesInstanceUID = imagePlaneModule.SeriesInstanceUID;
+        }
       }
     }
 

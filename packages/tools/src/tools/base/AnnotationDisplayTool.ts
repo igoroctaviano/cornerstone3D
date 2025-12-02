@@ -83,26 +83,9 @@ abstract class AnnotationDisplayTool extends BaseTool {
       filterOptions.displaySetInstanceUID =
         element.dataset?.displaySetInstanceUID;
       filterOptions.seriesInstanceUID = element.dataset?.seriesInstanceUID;
-
-      console.log(
-        `[filterAnnotations] Display set mode ON, viewport seriesUID=${filterOptions.seriesInstanceUID}, annotations count=${annotations.length}`
-      );
-    } else {
-      console.log(
-        `[filterAnnotations] Frame of reference mode, annotations count=${annotations.length}`
-      );
     }
 
-    const filtered = filterAnnotationsForDisplay(
-      viewport,
-      annotations,
-      filterOptions
-    );
-    console.log(
-      `[filterAnnotations] Filtered to ${filtered.length} annotations`
-    );
-
-    return filtered;
+    return filterAnnotationsForDisplay(viewport, annotations, filterOptions);
   }
 
   /**

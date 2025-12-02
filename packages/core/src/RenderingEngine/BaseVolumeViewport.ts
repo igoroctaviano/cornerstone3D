@@ -640,39 +640,16 @@ abstract class BaseVolumeViewport extends Viewport {
 
     // Add series instance UID from volume metadata for annotation filtering
     if (volumeId) {
-      try {
-        const volume = cache.getVolume(volumeId);
-        if (volume?.metadata?.SeriesInstanceUID) {
-          target.seriesInstanceUID = volume.metadata.SeriesInstanceUID;
-          console.log(
-            '[BaseVolumeViewport.getViewReference] ✅ Set seriesInstanceUID from volume.metadata:',
-            target.seriesInstanceUID
-          );
-        } else if (volume?.imageIds?.length > 0) {
-          // Fallback: get from first image's instance metadata
-          const firstImageId = volume.imageIds[0];
-          const instance = metaData.get('instance', firstImageId);
-          if (instance?.SeriesInstanceUID) {
-            target.seriesInstanceUID = instance.SeriesInstanceUID;
-            console.log(
-              '[BaseVolumeViewport.getViewReference] ✅ Set seriesInstanceUID from first image instance:',
-              target.seriesInstanceUID
-            );
-          } else {
-            console.warn(
-              '[BaseVolumeViewport.getViewReference] ⚠️ No SeriesInstanceUID found'
-            );
-          }
-        } else {
-          console.warn(
-            '[BaseVolumeViewport.getViewReference] ⚠️ No volume metadata or imageIds available'
-          );
+      const volume = cache.getVolume(volumeId);
+      if (volume?.metadata?.SeriesInstanceUID) {
+        target.seriesInstanceUID = volume.metadata.SeriesInstanceUID;
+      } else if (volume?.imageIds?.length > 0) {
+        // Fallback: get from first image's instance metadata
+        const firstImageId = volume.imageIds[0];
+        const instance = metaData.get('instance', firstImageId);
+        if (instance?.SeriesInstanceUID) {
+          target.seriesInstanceUID = instance.SeriesInstanceUID;
         }
-      } catch (error) {
-        console.error(
-          '[BaseVolumeViewport.getViewReference] ❌ Error getting volume:',
-          error
-        );
       }
     }
 
