@@ -3319,21 +3319,6 @@ class StackViewport extends Viewport {
       Object.assign(reference, referenceData);
     }
 
-    if (this.imageIds?.length > 0) {
-      const instance = metaData.get('instance', referencedImageId);
-      if (instance?.SeriesInstanceUID) {
-        reference.seriesInstanceUID = instance.SeriesInstanceUID;
-      } else {
-        const imagePlaneModule = metaData.get(
-          'imagePlaneModule',
-          referencedImageId
-        );
-        if (imagePlaneModule?.SeriesInstanceUID) {
-          reference.seriesInstanceUID = imagePlaneModule.SeriesInstanceUID;
-        }
-      }
-    }
-
     return reference;
   }
 
