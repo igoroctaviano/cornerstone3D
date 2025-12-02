@@ -104,6 +104,25 @@ export interface ReferenceCompatibleOptions {
    * To see if the reference could be overlaid (labelmap, fusion) on the viewport, set this to true.
    */
   asOverlay?: boolean;
+
+  /**
+   * Filter by display set instead of frame of reference.
+   * When true, only show annotations created in the same display set.
+   * This is used for per-viewport annotation filtering control.
+   */
+  byDisplaySet?: boolean;
+
+  /**
+   * The display set UID to filter by (used with byDisplaySet).
+   * When byDisplaySet is true, only annotations with matching displaySetInstanceUID will be shown.
+   */
+  displaySetInstanceUID?: string;
+
+  /**
+   * The series instance UID to filter by (used with byDisplaySet as fallback).
+   * Used when displaySetInstanceUID is not available on the annotation.
+   */
+  seriesInstanceUID?: string;
 }
 
 /**
@@ -268,6 +287,21 @@ export interface ViewReference {
    * particular bounds or not.  This will be in world coordinates.
    */
   bounds?: BoundsLPS;
+
+  /**
+   * The display set instance UID that this view reference belongs to.
+   * Used for filtering annotations by display set in OHIF.
+   * This is populated when the view reference is created from a viewport
+   * that has display set information available.
+   */
+  displaySetInstanceUID?: string;
+
+  /**
+   * The series instance UID that this view reference belongs to.
+   * Can be used to determine display set membership when displaySetInstanceUID
+   * is not available. Typically populated from DICOM metadata.
+   */
+  seriesInstanceUID?: string;
 }
 
 /**

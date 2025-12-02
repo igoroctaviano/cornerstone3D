@@ -73,7 +73,36 @@ abstract class AnnotationDisplayTool extends BaseTool {
     const enabledElement = getEnabledElement(element);
     const { viewport } = enabledElement;
 
-    return filterAnnotationsForDisplay(viewport, annotations);
+    // Check for OHIF annotation display mode configuration
+    const filterOptions: Types.ReferenceCompatibleOptions = {};
+
+    const annotationDisplayMode = element.dataset?.annotationDisplayMode;
+    if (annotationDisplayMode === 'displaySet') {
+      // Enable display-set filtering mode
+      filterOptions.byDisplaySet = true;
+      filterOptions.displaySetInstanceUID =
+        element.dataset?.displaySetInstanceUID;
+      filterOptions.seriesInstanceUID = element.dataset?.seriesInstanceUID;
+
+      console.log(
+        `[filterAnnotations] Display set mode ON, viewport seriesUID=${filterOptions.seriesInstanceUID}, annotations count=${annotations.length}`
+      );
+    } else {
+      console.log(
+        `[filterAnnotations] Frame of reference mode, annotations count=${annotations.length}`
+      );
+    }
+
+    const filtered = filterAnnotationsForDisplay(
+      viewport,
+      annotations,
+      filterOptions
+    );
+    console.log(
+      `[filterAnnotations] Filtered to ${filtered.length} annotations`
+    );
+
+    return filtered;
   }
 
   /**
