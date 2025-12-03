@@ -14,6 +14,36 @@ import type { Annotations } from '../../types';
  * @param annotations - Annotations
  * @returns A filtered version of the annotations.
  */
+function applyGroupFiltering(
+  annotations: Annotations,
+  element: HTMLDivElement
+): Annotations {
+  const visibleGroupIdsStr = element?.dataset?.visibleAnnotationGroups;
+
+  if (visibleGroupIdsStr !== undefined) {
+    const visibleGroupIds = visibleGroupIdsStr.split(',').filter(Boolean);
+
+    if (visibleGroupIds.length === 0) {
+      return [];
+    }
+
+    const filtered = annotations.filter((annotation) => {
+      // Support both new groupIds array and legacy groupId string
+      const annotationGroupIds =
+        annotation.groupIds ||
+        (annotation['groupId'] ? [annotation['groupId']] : ['default']);
+
+      // Show annotation if ANY of its groups are visible
+      return annotationGroupIds.some((groupId) =>
+        visibleGroupIds.includes(groupId)
+      );
+    });
+    return filtered;
+  }
+
+  return annotations;
+}
+
 export default function filterAnnotationsForDisplay(
   viewport: Types.IViewport,
   annotations: Annotations,
@@ -21,6 +51,8 @@ export default function filterAnnotationsForDisplay(
 ): Annotations {
   const element = viewport.element as HTMLDivElement;
   const annotationDisplayMode = element?.dataset?.annotationDisplayMode;
+
+  let filteredAnnotations: Annotations;
 
   if (annotationDisplayMode === 'displaySet') {
     let sliceFilteredAnnotations = annotations;
@@ -61,29 +93,25 @@ export default function filterAnnotationsForDisplay(
       return false;
     });
 
-    return result;
-  }
-
-  if (viewport instanceof VolumeViewport) {
+    filteredAnnotations = result;
+  } else if (viewport instanceof VolumeViewport) {
     const camera = viewport.getCamera();
 
     const { spacingInNormalDirection } =
       csUtils.getTargetVolumeAndSpacingInNormalDir(viewport, camera);
 
-    return filterAnnotationsWithinSlice(
+    filteredAnnotations = filterAnnotationsWithinSlice(
       annotations,
       camera,
       spacingInNormalDirection
     );
-  }
-
-  if (
+  } else if (
     annotationDisplayMode === 'frameOfReference' &&
     viewport instanceof StackViewport
   ) {
     const viewportFrameOfReferenceUID = viewport.getFrameOfReferenceUID();
 
-    return annotations.filter((annotation) => {
+    filteredAnnotations = annotations.filter((annotation) => {
       if (!annotation.isVisible) {
         return false;
       }
@@ -95,26 +123,28 @@ export default function filterAnnotationsForDisplay(
         annotation.metadata?.FrameOfReferenceUID;
       return annotationFrameOfReferenceUID === viewportFrameOfReferenceUID;
     });
+  } else {
+    if (viewport instanceof StackViewport) {
+      const imageId = viewport.getCurrentImageId();
+
+      if (!imageId) {
+        return [];
+      }
+
+      const colonIndex = imageId.indexOf(':');
+      filterOptions.imageURI = imageId.substring(colonIndex + 1);
+    }
+
+    filteredAnnotations = annotations.filter((annotation) => {
+      if (!annotation.isVisible) {
+        return false;
+      }
+      if (annotation.data.isCanvasAnnotation) {
+        return true;
+      }
+      return viewport.isReferenceViewable(annotation.metadata, filterOptions);
+    });
   }
 
-  if (viewport instanceof StackViewport) {
-    const imageId = viewport.getCurrentImageId();
-
-    if (!imageId) {
-      return [];
-    }
-
-    const colonIndex = imageId.indexOf(':');
-    filterOptions.imageURI = imageId.substring(colonIndex + 1);
-  }
-
-  return annotations.filter((annotation) => {
-    if (!annotation.isVisible) {
-      return false;
-    }
-    if (annotation.data.isCanvasAnnotation) {
-      return true;
-    }
-    return viewport.isReferenceViewable(annotation.metadata, filterOptions);
-  });
+  return applyGroupFiltering(filteredAnnotations, element);
 }
