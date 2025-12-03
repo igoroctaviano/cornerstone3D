@@ -104,13 +104,6 @@ export interface ReferenceCompatibleOptions {
    * To see if the reference could be overlaid (labelmap, fusion) on the viewport, set this to true.
    */
   asOverlay?: boolean;
-
-  /**
-   * Filter by display set instead of frame of reference.
-   * When true, only show annotations created in the same display set.
-   * This is used for per-viewport annotation filtering control.
-   */
-  byDisplaySet?: boolean;
 }
 
 /**

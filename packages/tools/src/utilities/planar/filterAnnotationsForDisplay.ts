@@ -19,7 +19,10 @@ export default function filterAnnotationsForDisplay(
   annotations: Annotations,
   filterOptions: Types.ReferenceCompatibleOptions = {}
 ): Annotations {
-  if (filterOptions.byDisplaySet) {
+  const element = viewport.element as HTMLDivElement;
+  const annotationDisplayMode = element?.dataset?.annotationDisplayMode;
+
+  if (annotationDisplayMode === 'displaySet') {
     let sliceFilteredAnnotations = annotations;
     if (viewport instanceof VolumeViewport) {
       const camera = viewport.getCamera();

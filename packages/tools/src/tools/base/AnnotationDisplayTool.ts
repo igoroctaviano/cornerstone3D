@@ -73,14 +73,7 @@ abstract class AnnotationDisplayTool extends BaseTool {
     const enabledElement = getEnabledElement(element);
     const { viewport } = enabledElement;
 
-    const filterOptions: Types.ReferenceCompatibleOptions = {};
-
-    const annotationDisplayMode = element.dataset?.annotationDisplayMode;
-    if (annotationDisplayMode === 'displaySet') {
-      filterOptions.byDisplaySet = true;
-    }
-
-    return filterAnnotationsForDisplay(viewport, annotations, filterOptions);
+    return filterAnnotationsForDisplay(viewport, annotations);
   }
 
   /**
