@@ -3,6 +3,7 @@ import {
   StackViewport,
   VolumeViewport,
   utilities as csUtils,
+  metaData,
 } from '@cornerstonejs/core';
 
 import filterAnnotationsWithinSlice from './filterAnnotationsWithinSlice';
@@ -82,8 +83,9 @@ export default function filterAnnotationsForDisplay(
     viewport instanceof StackViewport
   ) {
     const viewportFrameOfReferenceUID = viewport.getFrameOfReferenceUID();
+    const camera = viewport.getCamera();
 
-    return annotations.filter((annotation) => {
+    const forMatchedAnnotations = annotations.filter((annotation) => {
       if (!annotation.isVisible) {
         return false;
       }
@@ -95,6 +97,25 @@ export default function filterAnnotationsForDisplay(
         annotation.metadata?.FrameOfReferenceUID;
       return annotationFrameOfReferenceUID === viewportFrameOfReferenceUID;
     });
+
+    const currentImageId = viewport.getCurrentImageId();
+    if (!currentImageId) {
+      return [];
+    }
+
+    const imagePlaneModule = metaData.get('imagePlaneModule', currentImageId);
+    const spacingInNormalDirection =
+      imagePlaneModule?.spacingBetweenSlices ||
+      imagePlaneModule?.sliceThickness ||
+      1;
+
+    const result = filterAnnotationsWithinSlice(
+      forMatchedAnnotations,
+      camera,
+      spacingInNormalDirection
+    );
+
+    return result;
   }
 
   if (viewport instanceof StackViewport) {
