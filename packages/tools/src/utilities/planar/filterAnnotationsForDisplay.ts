@@ -28,12 +28,7 @@ function applyGroupFiltering(
     }
 
     const filtered = annotations.filter((annotation) => {
-      // Support both new groupIds array and legacy groupId string
-      const annotationGroupIds =
-        annotation.groupIds ||
-        (annotation['groupId'] ? [annotation['groupId']] : ['default']);
-
-      // Show annotation if ANY of its groups are visible
+      const annotationGroupIds = annotation.groupIds || ['default'];
       return annotationGroupIds.some((groupId) =>
         visibleGroupIds.includes(groupId)
       );
