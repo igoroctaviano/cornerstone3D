@@ -77,7 +77,10 @@ export default function filterAnnotationsForDisplay(
     );
   }
 
-  if (viewport instanceof StackViewport) {
+  if (
+    annotationDisplayMode === 'frameOfReference' &&
+    viewport instanceof StackViewport
+  ) {
     const viewportFrameOfReferenceUID = viewport.getFrameOfReferenceUID();
 
     return annotations.filter((annotation) => {
@@ -93,6 +96,18 @@ export default function filterAnnotationsForDisplay(
       return annotationFrameOfReferenceUID === viewportFrameOfReferenceUID;
     });
   }
+
+  if (viewport instanceof StackViewport) {
+    const imageId = viewport.getCurrentImageId();
+
+    if (!imageId) {
+      return [];
+    }
+
+    const colonIndex = imageId.indexOf(':');
+    filterOptions.imageURI = imageId.substring(colonIndex + 1);
+  }
+
   return annotations.filter((annotation) => {
     if (!annotation.isVisible) {
       return false;
