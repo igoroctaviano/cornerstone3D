@@ -3240,9 +3240,20 @@ class StackViewport extends Viewport {
       if (options.withNavigation) {
         return true;
       }
-      const rangeEndSliceIndex =
-        multiSliceReference &&
-        this.imageKeyToIndexMap.get(multiSliceReference.referencedImageId);
+      if (!multiSliceReference) {
+        return testIndex === foundSliceIndex;
+      }
+
+      const rangeEndImageId = multiSliceReference.referencedImageId;
+      multiSliceReference.referencedImageURI ||= imageIdToURI(rangeEndImageId);
+      const rangeEndSliceIndex = this.imageKeyToIndexMap.get(
+        multiSliceReference.referencedImageURI
+      );
+
+      if (rangeEndSliceIndex === undefined) {
+        return false;
+      }
+
       return testIndex <= rangeEndSliceIndex && testIndex >= foundSliceIndex;
     }
 

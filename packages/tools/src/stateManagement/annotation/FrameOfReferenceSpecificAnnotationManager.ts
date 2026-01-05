@@ -117,32 +117,32 @@ class FrameOfReferenceSpecificAnnotationManager implements IAnnotationManager {
   };
 
   /**
-   * Returns the annotations associated with the specified frameOfReference and tool, or
+   * Returns the annotations associated with the specified selectorId and tool, or
    * all annotations for the group if the tool name is not provided.
    *
-   * @param groupKey - The annotation group key to retrieve annotations for (in default manager it is FrameOfReferenceUID).
+   * @param selectorId - The selector ID to retrieve annotations for (in default manager it is FrameOfReferenceUID).
    * @param toolName - Optional. The name of the tool to retrieve annotations for.
-   * @returns The annotations associated with the specified group (default FrameOfReferenceUID) and tool,
+   * @returns The annotations associated with the specified selectorId (default FrameOfReferenceUID) and tool,
    * or all annotations for the group (FrameOfReferenceUID) if the tool name is not provided.
    * WARNING: The list returned here is internal tool data, not a copy, so do NOT modify it.
    */
   getAnnotations = (
-    groupKey: string,
+    selectorId: string,
     toolName?: string
   ): GroupSpecificAnnotations | Annotations => {
     const annotations = this.annotations;
 
-    if (!annotations[groupKey]) {
+    if (!annotations[selectorId]) {
       return [];
     }
 
     if (toolName) {
-      return annotations[groupKey][toolName]
-        ? annotations[groupKey][toolName]
+      return annotations[selectorId][toolName]
+        ? annotations[selectorId][toolName]
         : [];
     }
 
-    return annotations[groupKey];
+    return annotations[selectorId];
   };
 
   /**
@@ -172,16 +172,16 @@ class FrameOfReferenceSpecificAnnotationManager implements IAnnotationManager {
 
   /**
    * A function that returns the number of annotations for a given tool in the
-   * specific group (default FrameOfReferenceUID) IF no groupKey (FrameOfReferenceUID) is provided,
+   * specific group (default FrameOfReferenceUID) IF no selectorId (FrameOfReferenceUID) is provided,
    * it will return the number of annotations for the tool in all groups (FrameOfReferenceUIDs)
    *
-   * @param groupKey - The annotation group key to retrieve annotations for (in default manager it is FrameOfReferenceUID).
+   * @param selectorId - The selector ID to retrieve annotations for (in default manager it is FrameOfReferenceUID).
    * @param toolName - The name of the tool to retrieve data for.
    *
    * @returns The number of annotations for a given tool in the state
    */
-  getNumberOfAnnotations = (groupKey: string, toolName?: string): number => {
-    const annotations = this.getAnnotations(groupKey, toolName);
+  getNumberOfAnnotations = (selectorId: string, toolName?: string): number => {
+    const annotations = this.getAnnotations(selectorId, toolName);
 
     if (!annotations.length) {
       return 0;
@@ -204,13 +204,13 @@ class FrameOfReferenceSpecificAnnotationManager implements IAnnotationManager {
    * Adds an instance of `Annotation` to the `annotations`.
    *
    * @param annotation - The annotation to add.
-   * @param groupKey - The annotation group key to add the annotation to (in default manager it is FrameOfReferenceUID).
+   * @param selectorId - The selector ID to add the annotation to (in default manager it is FrameOfReferenceUID).
    */
-  addAnnotation = (annotation: Annotation, groupKey?: string): void => {
+  addAnnotation = (annotation: Annotation, selectorId?: string): void => {
     const { metadata } = annotation;
     const { FrameOfReferenceUID, toolName } = metadata;
 
-    groupKey = groupKey || FrameOfReferenceUID;
+    const groupKey = selectorId || FrameOfReferenceUID;
 
     const annotations = this.annotations;
 
@@ -280,16 +280,16 @@ class FrameOfReferenceSpecificAnnotationManager implements IAnnotationManager {
    *
    * @returns The removed annotations
    */
-  removeAnnotations = (groupKey: string, toolName?: string): Annotations => {
+  removeAnnotations = (selectorId: string, toolName?: string): Annotations => {
     const annotations = this.annotations;
     const removedAnnotations = [];
 
-    if (!annotations[groupKey]) {
+    if (!annotations[selectorId]) {
       return removedAnnotations;
     }
 
     if (toolName) {
-      const annotationsForTool = annotations[groupKey][toolName];
+      const annotationsForTool = annotations[selectorId][toolName];
       if (annotationsForTool) {
         for (const annotation of annotationsForTool) {
           this.removeAnnotation(annotation.annotationUID);
@@ -297,8 +297,8 @@ class FrameOfReferenceSpecificAnnotationManager implements IAnnotationManager {
         }
       }
     } else {
-      for (const toolName in annotations[groupKey]) {
-        const annotationsForTool = annotations[groupKey][toolName];
+      for (const toolName in annotations[selectorId]) {
+        const annotationsForTool = annotations[selectorId][toolName];
         for (const annotation of annotationsForTool) {
           this.removeAnnotation(annotation.annotationUID);
           removedAnnotations.push(annotation);
@@ -321,13 +321,13 @@ class FrameOfReferenceSpecificAnnotationManager implements IAnnotationManager {
    * @returns A section of the annotations.
    */
   saveAnnotations = (
-    groupKey?: string,
+    selectorId?: string,
     toolName?: string
   ): AnnotationState | GroupSpecificAnnotations | Annotations => {
     const annotations = this.annotations;
 
-    if (groupKey && toolName) {
-      const frameOfReferenceSpecificAnnotations = annotations[groupKey];
+    if (selectorId && toolName) {
+      const frameOfReferenceSpecificAnnotations = annotations[selectorId];
 
       if (!frameOfReferenceSpecificAnnotations) {
         return;
@@ -337,8 +337,8 @@ class FrameOfReferenceSpecificAnnotationManager implements IAnnotationManager {
         frameOfReferenceSpecificAnnotations[toolName];
 
       return structuredClone(toolSpecificAnnotations);
-    } else if (groupKey) {
-      const frameOfReferenceSpecificAnnotations = annotations[groupKey];
+    } else if (selectorId) {
+      const frameOfReferenceSpecificAnnotations = annotations[selectorId];
 
       return structuredClone(frameOfReferenceSpecificAnnotations);
     }
@@ -350,37 +350,37 @@ class FrameOfReferenceSpecificAnnotationManager implements IAnnotationManager {
    * Restores a section of the `annotations`. Useful for loading in serialized data.
    *
    * - If no arguments are given, the entire `AnnotationState` instance is restored.
-   * - If the `FrameOfReferenceUID` is given, the corresponding
+   * - If the `selectorId` (FrameOfReferenceUID) is given, the corresponding
    * `FrameOfReferenceSpecificAnnotations` instance is restored.
-   * - If both the `FrameOfReferenceUID` and the `toolName` are are given, the
+   * - If both the `selectorId` and the `toolName` are are given, the
    * corresponding `Annotations` instance is restored.
    *
-   * @param groupKey - A filter string for restoring only the `annotations` of a specific frame of reference.
+   * @param selectorId - A filter string for restoring only the `annotations` of a specific frame of reference.
    * @param toolName - A filter string for restoring `annotation` for a specific tool on a specific frame of reference.
    */
   restoreAnnotations = (
     state: AnnotationState | GroupSpecificAnnotations | Annotations,
-    groupKey?: string,
+    selectorId?: string,
     toolName?: string
   ): void => {
     const annotations = this.annotations;
 
-    if (groupKey && toolName) {
+    if (selectorId && toolName) {
       // Set Annotations for FrameOfReferenceUID and toolName.
 
-      let frameOfReferenceSpecificAnnotations = annotations[groupKey];
+      let frameOfReferenceSpecificAnnotations = annotations[selectorId];
 
       if (!frameOfReferenceSpecificAnnotations) {
-        annotations[groupKey] = {};
+        annotations[selectorId] = {};
 
-        frameOfReferenceSpecificAnnotations = annotations[groupKey];
+        frameOfReferenceSpecificAnnotations = annotations[selectorId];
       }
 
       frameOfReferenceSpecificAnnotations[toolName] = <Annotations>state;
-    } else if (groupKey) {
+    } else if (selectorId) {
       // Set FrameOfReferenceSpecificAnnotations for FrameOfReferenceUID.
 
-      annotations[groupKey] = <GroupSpecificAnnotations>state;
+      annotations[selectorId] = <GroupSpecificAnnotations>state;
     } else {
       // Set entire annotations
       this.annotations = <AnnotationState>structuredClone(state);

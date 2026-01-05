@@ -11,7 +11,7 @@ import { vec3 } from 'gl-matrix';
 import { getCalibratedLengthUnitsAndScale } from '../../utilities/getCalibratedUnits';
 import * as math from '../../utilities/math';
 import { polyline } from '../../utilities/math';
-import { filterAnnotationsForDisplay } from '../../utilities/planar';
+import { getAnnotationsForDisplay } from '../../stateManagement/dataDisplay/annotationDataDisplayManager';
 import throttle from '../../utilities/throttle';
 import { getViewportIdsWithToolToRender } from '../../utilities/viewportFilters';
 import triggerAnnotationRenderForViewportIds from '../../utilities/triggerAnnotationRenderForViewportIds';
@@ -464,9 +464,9 @@ class PlanarFreehandROITool extends ContourSegmentationBaseTool {
         spacingInNormalDirection
       );
     } else {
-      // Use the default `filterAnnotationsForDisplay` utility, as the stack
-      // path doesn't require handles.
-      annotationsToDisplay = filterAnnotationsForDisplay(viewport, annotations);
+      // Use the active DataDisplayManager pipeline for annotations.
+      // The stack path doesn't require handles.
+      annotationsToDisplay = getAnnotationsForDisplay(viewport, annotations);
     }
 
     return annotationsToDisplay;

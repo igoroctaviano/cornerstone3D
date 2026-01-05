@@ -5,6 +5,7 @@ import {
   setVolumesForViewports,
   volumeLoader,
   getRenderingEngine,
+  eventTarget,
 } from '@cornerstonejs/core';
 import {
   initDemo,
@@ -17,6 +18,7 @@ import {
   addButtonToToolbar,
 } from '../../../../utils/demo/helpers';
 import * as cornerstoneTools from '@cornerstonejs/tools';
+import { annotationRenderingEngine } from '../../src/stateManagement/annotation/AnnotationRenderingEngine';
 
 const {
   ToolGroupManager,
@@ -127,6 +129,365 @@ addDropdownToToolbar({
           bindings: [{ mouseButton: MouseBindings.Primary }],
         });
       }
+    });
+  },
+});
+
+// ============================= //
+// Group management functions (defined before use)
+function setupAnnotationGroupAssignment() {
+  // Listen for annotation added events
+  const { Events } = csToolsEnums;
+
+  eventTarget.addEventListener(Events.ANNOTATION_ADDED, (evt: any) => {
+    const { annotation } = evt.detail;
+    // Assign new annotations to the active group
+    // Replace any existing groupIds to ensure it's only in the active group
+    annotation.groupIds = [activeGroupId];
+    
+    // Ensure the active group is visible in the viewport where annotation was created
+    const { viewportId } = evt.detail;
+    if (viewportId && viewportVisibleGroups[viewportId]) {
+      const visibleGroups = viewportVisibleGroups[viewportId];
+      if (!visibleGroups.includes(activeGroupId)) {
+        visibleGroups.push(activeGroupId);
+        updateViewportVisibleGroups(viewportId);
+        // Update UI to reflect the change
+        updateGroupSelectionUI();
+      } else {
+        // Still trigger render to show the new annotation
+        const viewport = renderingEngine?.getViewport(viewportId);
+        if (viewport?.element) {
+          annotationRenderingEngine.renderViewport(viewport.element as HTMLDivElement);
+        }
+      }
+    } else if (viewportId) {
+      // If viewportId exists but not in our map, initialize it
+      viewportVisibleGroups[viewportId] = [activeGroupId];
+      updateViewportVisibleGroups(viewportId);
+      updateGroupSelectionUI();
+    }
+  });
+}
+
+function updateViewportVisibleGroups(viewportId: string) {
+  const viewport = renderingEngine?.getViewport(viewportId);
+  if (!viewport?.element) {
+    return;
+  }
+
+  const visibleGroups = viewportVisibleGroups[viewportId] || ['default'];
+  const element = viewport.element as HTMLDivElement;
+  element.dataset.visibleAnnotationGroups = visibleGroups.join(',');
+  
+  // Trigger viewport render
+  viewport.render();
+  
+  // Trigger annotation re-render
+  annotationRenderingEngine.renderViewport(element);
+}
+
+function createGroup() {
+  const groupName = prompt('Enter group name:', `Group ${groupCounter}`);
+  if (!groupName) {
+    return;
+  }
+
+  const groupId = `group-${groupCounter++}`;
+  groups.push({ id: groupId, name: groupName });
+
+  // Add to visible groups for all viewports by default
+  Object.keys(viewportVisibleGroups).forEach((vpId) => {
+    if (!viewportVisibleGroups[vpId].includes(groupId)) {
+      viewportVisibleGroups[vpId].push(groupId);
+    }
+  });
+
+  // Update all viewports
+  Object.keys(viewportVisibleGroups).forEach((vpId) => {
+    updateViewportVisibleGroups(vpId);
+  });
+
+  // Update UI
+  updateGroupSelectionUI();
+}
+
+function toggleGroupForViewport(viewportId: string, groupId: string) {
+  const visibleGroups = viewportVisibleGroups[viewportId] || [];
+  const index = visibleGroups.indexOf(groupId);
+
+  if (index >= 0) {
+    visibleGroups.splice(index, 1);
+    
+    // Don't allow hiding all groups - ensure at least the active group is visible
+    // This prevents issues where you can't draw annotations because no groups are visible
+    if (visibleGroups.length === 0) {
+      // Keep at least the active group visible
+      visibleGroups.push(activeGroupId);
+      // Update UI to reflect this
+      setTimeout(() => updateGroupSelectionUI(), 0);
+    }
+  } else {
+    visibleGroups.push(groupId);
+  }
+
+  viewportVisibleGroups[viewportId] = visibleGroups;
+  updateViewportVisibleGroups(viewportId);
+  updateGroupSelectionUI();
+}
+
+function setupGroupManagementUI() {
+  // Only show group UI when "bySelectorId" manager is selected
+  if (annotationDisplayManagerName !== 'bySelectorId') {
+    return;
+  }
+
+  const groupUI = document.createElement('div');
+  groupUI.id = 'group-selection-ui';
+  groupUI.style.marginTop = '20px';
+  groupUI.style.padding = '15px';
+  groupUI.style.border = '1px solid #ccc';
+  groupUI.style.borderRadius = '4px';
+  groupUI.style.backgroundColor = '#f9f9f9';
+  groupUI.style.maxHeight = '400px';
+  groupUI.style.overflowY = 'auto';
+
+  const title = document.createElement('h4');
+  title.textContent = 'Annotation Groups';
+  title.style.margin = '0 0 10px 0';
+  groupUI.appendChild(title);
+
+  // Active group selector
+  const activeGroupSection = document.createElement('div');
+  activeGroupSection.style.marginBottom = '15px';
+  activeGroupSection.style.padding = '10px';
+  activeGroupSection.style.backgroundColor = '#e8f4f8';
+  activeGroupSection.style.borderRadius = '4px';
+
+  const activeGroupLabel = document.createElement('label');
+  activeGroupLabel.textContent = 'Active Group (for new annotations): ';
+  activeGroupLabel.style.fontWeight = 'bold';
+  activeGroupLabel.style.marginRight = '10px';
+  activeGroupSection.appendChild(activeGroupLabel);
+
+  const activeGroupSelect = document.createElement('select');
+  activeGroupSelect.id = 'active-group-select';
+  groups.forEach((group) => {
+    const option = document.createElement('option');
+    option.value = group.id;
+    option.textContent = group.name;
+    if (group.id === activeGroupId) {
+      option.selected = true;
+    }
+    activeGroupSelect.appendChild(option);
+  });
+  activeGroupSelect.onchange = () => {
+    activeGroupId = activeGroupSelect.value;
+  };
+  activeGroupSelect.style.padding = '5px';
+  activeGroupSection.appendChild(activeGroupSelect);
+  groupUI.appendChild(activeGroupSection);
+
+  // Create group button
+  const createBtn = document.createElement('button');
+  createBtn.textContent = '+ Create Group';
+  createBtn.onclick = () => {
+    createGroup();
+    // Update active group dropdown
+    const select = document.getElementById('active-group-select') as HTMLSelectElement;
+    if (select) {
+      select.innerHTML = '';
+      groups.forEach((group) => {
+        const option = document.createElement('option');
+        option.value = group.id;
+        option.textContent = group.name;
+        if (group.id === activeGroupId) {
+          option.selected = true;
+        }
+        select.appendChild(option);
+      });
+    }
+  };
+  createBtn.style.marginBottom = '15px';
+  createBtn.style.padding = '5px 10px';
+  groupUI.appendChild(createBtn);
+
+  // Group selection by viewport category
+  const categories = [
+    { label: 'CT Viewports', ids: Object.values(viewportIds.CT) },
+    { label: 'PT Viewports', ids: Object.values(viewportIds.PT) },
+    { label: 'FUSION Viewports', ids: Object.values(viewportIds.FUSION) },
+    { label: 'PETMIP Viewports', ids: Object.values(viewportIds.PETMIP) },
+  ];
+
+  categories.forEach((category) => {
+    const categorySection = document.createElement('div');
+    categorySection.style.marginBottom = '20px';
+
+    const categoryLabel = document.createElement('strong');
+    categoryLabel.textContent = category.label;
+    categoryLabel.style.display = 'block';
+    categoryLabel.style.marginBottom = '8px';
+    categorySection.appendChild(categoryLabel);
+
+    // Per-viewport within category
+    category.ids.forEach((vpId) => {
+      const viewportSection = document.createElement('div');
+      viewportSection.style.marginLeft = '10px';
+      viewportSection.style.marginBottom = '8px';
+
+      const viewportLabel = document.createElement('span');
+      viewportLabel.textContent = `${vpId}: `;
+      viewportLabel.style.fontSize = '0.9em';
+      viewportSection.appendChild(viewportLabel);
+
+      groups.forEach((group) => {
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.id = `group-${vpId}-${group.id}`;
+        checkbox.checked = (viewportVisibleGroups[vpId] || []).includes(group.id);
+        checkbox.onchange = () => toggleGroupForViewport(vpId, group.id);
+        checkbox.style.marginLeft = '5px';
+
+        const label = document.createElement('label');
+        label.htmlFor = checkbox.id;
+        label.textContent = group.name;
+        label.style.marginLeft = '3px';
+        label.style.marginRight = '10px';
+        label.style.cursor = 'pointer';
+        label.style.fontSize = '0.9em';
+
+        viewportSection.appendChild(checkbox);
+        viewportSection.appendChild(label);
+      });
+
+      categorySection.appendChild(viewportSection);
+    });
+
+    groupUI.appendChild(categorySection);
+  });
+
+  const content = document.getElementById('content');
+  content?.appendChild(groupUI);
+}
+
+function updateGroupSelectionUI() {
+  const existingUI = document.getElementById('group-selection-ui');
+  if (existingUI) {
+    existingUI.remove();
+  }
+
+  // Only show when "bySelectorId" manager is selected
+  if (annotationDisplayManagerName === 'bySelectorId') {
+    setupGroupManagementUI();
+  }
+}
+
+// ============================= //
+// DataDisplayManager demo controls (from cs3d-ann-manager-plan.md)
+const annotationDisplayManagerValues = [
+  'default',
+  'bySelectorId',
+  'byReferenceImageId',
+  'byFrameOfReference',
+  'referenceViewable',
+] as const;
+
+const annotationDisplayTargetValues = [
+  'ALL',
+  'CT',
+  'PT',
+  'FUSION',
+  'PETMIP',
+] as const;
+
+let annotationDisplayManagerName:
+  | (typeof annotationDisplayManagerValues)[number] = 'default';
+let annotationDisplayTarget:
+  | (typeof annotationDisplayTargetValues)[number] = 'ALL';
+
+// Group management
+interface AnnotationGroup {
+  id: string;
+  name: string;
+}
+
+const groups: AnnotationGroup[] = [{ id: 'default', name: 'Default' }];
+let groupCounter = 1;
+
+// Active group for new annotations
+let activeGroupId = 'default';
+
+// Per-viewport visible groups - initialize all viewports with default
+const viewportVisibleGroups: Record<string, string[]> = {};
+
+addDropdownToToolbar({
+  id: 'annotationDisplayTarget',
+  options: {
+    values: [...annotationDisplayTargetValues],
+    defaultValue: annotationDisplayTarget,
+  },
+  onSelectedValueChange: (value) => {
+    annotationDisplayTarget = String(value) as any;
+  },
+});
+
+function getViewportIdsForTarget(
+  target: (typeof annotationDisplayTargetValues)[number]
+): string[] {
+  const ids: string[] = [];
+
+  if (target === 'ALL' || target === 'CT') {
+    ids.push(...Object.values(viewportIds.CT));
+  }
+  if (target === 'ALL' || target === 'PT') {
+    ids.push(...Object.values(viewportIds.PT));
+  }
+  if (target === 'ALL' || target === 'FUSION') {
+    ids.push(...Object.values(viewportIds.FUSION));
+  }
+  if (target === 'ALL' || target === 'PETMIP') {
+    ids.push(...Object.values(viewportIds.PETMIP));
+  }
+
+  return ids;
+}
+
+addDropdownToToolbar({
+  id: 'annotationDisplayManager',
+  options: {
+    values: [...annotationDisplayManagerValues],
+    defaultValue: annotationDisplayManagerName,
+  },
+  onSelectedValueChange: (value) => {
+    annotationDisplayManagerName = String(value) as any;
+
+    const ids = getViewportIdsForTarget(annotationDisplayTarget);
+    ids.forEach((id) => {
+      cornerstoneTools.dataDisplay.annotation.registerAnnotationDataDisplayManagerForViewport(
+        id,
+        annotationDisplayManagerName
+      );
+      const vp = renderingEngine?.getViewport(id);
+      vp?.render();
+    });
+
+    // Update group UI visibility
+    updateGroupSelectionUI();
+  },
+});
+
+addButtonToToolbar({
+  title: 'Apply Manager (Re-render)',
+  onClick: () => {
+    const ids = getViewportIdsForTarget(annotationDisplayTarget);
+    ids.forEach((id) => {
+      cornerstoneTools.dataDisplay.annotation.registerAnnotationDataDisplayManagerForViewport(
+        id,
+        annotationDisplayManagerName
+      );
+      const vp = renderingEngine?.getViewport(id);
+      vp?.render();
     });
   },
 });
@@ -879,6 +1240,25 @@ async function run() {
   // Tools and synchronizers can be set up in any order.
   setUpToolGroups();
   setUpSynchronizers();
+
+  // Initialize visible groups for all viewports
+  const allViewportIds = [
+    ...Object.values(viewportIds.CT),
+    ...Object.values(viewportIds.PT),
+    ...Object.values(viewportIds.FUSION),
+    ...Object.values(viewportIds.PETMIP),
+  ];
+
+  allViewportIds.forEach((vpId) => {
+    viewportVisibleGroups[vpId] = ['default'];
+    updateViewportVisibleGroups(vpId);
+  });
+
+  // Setup annotation group assignment
+  setupAnnotationGroupAssignment();
+
+  // Setup group management UI
+  setupGroupManagementUI();
 }
 
 run();

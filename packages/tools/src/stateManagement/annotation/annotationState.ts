@@ -1,6 +1,7 @@
 import { utilities as csUtils } from '@cornerstonejs/core';
 import type { Annotations, Annotation } from '../../types/AnnotationTypes';
 import type { AnnotationGroupSelector, IAnnotationManager } from '../../types';
+import { state as toolsState } from '../../store/state';
 import {
   triggerAnnotationAddedForElement,
   triggerAnnotationAddedForFOR,
@@ -8,22 +9,54 @@ import {
 } from './helpers/state';
 
 // our default annotation manager
-let defaultManager;
+let defaultManager: IAnnotationManager | undefined;
 
 /**
  * It returns the default annotations manager.
  * @returns the singleton default annotations manager.
  */
-function getAnnotationManager() {
-  return defaultManager;
+function getAnnotationManager(): IAnnotationManager {
+  const activeKey = toolsState.activeAnnotationManager;
+  const manager = toolsState.annotationManagers?.[activeKey] || defaultManager;
+  if (!manager) {
+    throw new Error(
+      'No annotation manager is configured. Did you call tools init/resetAnnotationManager?'
+    );
+  }
+  return manager;
 }
 
 /**
  * Set the annotation manager to be used for rendering, adding, removing, etc.
  * @param annotationManager - The annotation manager to be used
  */
-function setAnnotationManager(annotationManager: IAnnotationManager) {
+function setAnnotationManager(annotationManager: IAnnotationManager, key?: string) {
+  const managerKey = key || annotationManager.uid || 'DEFAULT';
+  toolsState.annotationManagers[managerKey] = annotationManager;
+  toolsState.activeAnnotationManager = managerKey;
   defaultManager = annotationManager;
+}
+
+/**
+ * Registers a manager without making it active.
+ * The key is used for `toolsState.activeAnnotationManager`.
+ */
+function registerAnnotationManager(
+  key: string,
+  annotationManager: IAnnotationManager
+): void {
+  toolsState.annotationManagers[key] = annotationManager;
+}
+
+/**
+ * Switches the active annotation manager by key.
+ */
+function setActiveAnnotationManager(key: string): void {
+  toolsState.activeAnnotationManager = key;
+}
+
+function getActiveAnnotationManagerKey(): string {
+  return toolsState.activeAnnotationManager;
 }
 
 /**
@@ -52,7 +85,7 @@ function getAnnotations(
  * Get the Annotation object by its UID
  * @param annotationUID - The unique identifier of the annotation.
  */
-function getAnnotation(annotationUID: string): Annotation {
+function getAnnotation(annotationUID: string): Annotation | undefined {
   const manager = getAnnotationManager();
   return manager.getAnnotation(annotationUID);
 }
@@ -75,7 +108,15 @@ function clearParentAnnotation(annotation: Annotation): void {
   }
 
   const parentAnnotation = getAnnotation(parentAnnotationUID);
+  if (!parentAnnotation?.childAnnotationUIDs) {
+    annotation.parentAnnotationUID = undefined;
+    return;
+  }
   const childUIDIndex = parentAnnotation.childAnnotationUIDs.indexOf(childUID);
+  if (childUIDIndex === -1) {
+    annotation.parentAnnotationUID = undefined;
+    return;
+  }
 
   parentAnnotation.childAnnotationUIDs.splice(childUIDIndex, 1);
   annotation.parentAnnotationUID = undefined;
@@ -297,6 +338,9 @@ export {
   removeAllAnnotations,
   // annotation manager
   setAnnotationManager,
+  registerAnnotationManager,
+  setActiveAnnotationManager,
+  getActiveAnnotationManagerKey,
   getAnnotationManager,
   invalidateAnnotation,
   getAnnotation,

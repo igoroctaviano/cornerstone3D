@@ -686,6 +686,24 @@ abstract class BaseVolumeViewport extends Viewport {
       const { referencedImageId } = viewRef;
       return !referencedImageId || this.hasImageURI(referencedImageId);
     }
+
+    /**
+     * Prefer exact image matching when possible.
+     *
+     * Rationale:
+     * - `sliceIndex` is not deterministic across different datasets that may share the same FOR.
+     * - `referencedImageId` is the canonical "what image" identifier and can capture timing
+     *   (e.g. 4D / multiframe) when the application encodes it in the imageId.
+     *
+     * Fall back to sliceIndex logic if we cannot determine a current image id (e.g. oblique views).
+     */
+    if (viewRef.referencedImageId) {
+      const currentImageId = this.getCurrentImageId?.();
+      if (currentImageId) {
+        return viewRef.referencedImageId === currentImageId;
+      }
+    }
+
     const currentSliceIndex = this.getSliceIndex();
     const { sliceIndex } = viewRef;
     if (Array.isArray(sliceIndex)) {

@@ -20,6 +20,7 @@ import * as cursors from './cursors';
 import * as Types from './types';
 import * as annotation from './stateManagement/annotation';
 import * as segmentation from './stateManagement/segmentation';
+import * as dataDisplay from './stateManagement/dataDisplay';
 import * as splines from './tools/annotation/splines';
 
 import {
@@ -182,6 +183,8 @@ export {
   annotation,
   // Segmentations
   segmentation,
+  // Data display (annotations first; extendable to other data types)
+  dataDisplay,
   // Utilities
   utilities,
   cursors,

@@ -25,7 +25,7 @@ import {
   getAllAnnotations,
   removeAnnotation,
 } from '../../stateManagement/annotation/annotationState';
-import { filterAnnotationsForDisplay } from '../../utilities/planar';
+import { getAnnotationsForDisplay } from '../../stateManagement/dataDisplay/annotationDataDisplayManager';
 import { isPointInsidePolyline3D } from '../../utilities/math/polyline';
 import { triggerSegmentationDataModified } from '../../stateManagement/segmentation/triggerSegmentationEvents';
 import { fillInsideCircle } from './strategies';
@@ -549,7 +549,7 @@ export default class LabelmapBaseTool extends BaseTool {
   ) {
     const removeContours = options?.removeContours ?? true;
     const annotations = getAllAnnotations();
-    const viewAnnotations = filterAnnotationsForDisplay(viewport, annotations);
+    const viewAnnotations = getAnnotationsForDisplay(viewport, annotations);
     if (!viewAnnotations?.length) {
       return;
     }

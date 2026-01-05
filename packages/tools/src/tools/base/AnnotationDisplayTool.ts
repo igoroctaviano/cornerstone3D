@@ -15,7 +15,7 @@ import type {
   SVGDrawingHelper,
 } from '../../types';
 import triggerAnnotationRender from '../../utilities/triggerAnnotationRender';
-import filterAnnotationsForDisplay from '../../utilities/planar/filterAnnotationsForDisplay';
+import { getAnnotationsForDisplay } from '../../stateManagement/dataDisplay/annotationDataDisplayManager';
 import { getStyleProperty } from '../../stateManagement/annotation/config/helpers';
 import { getState } from '../../stateManagement/annotation/config';
 import type { StyleSpecifier } from '../../types/AnnotationStyle';
@@ -73,7 +73,7 @@ abstract class AnnotationDisplayTool extends BaseTool {
     const enabledElement = getEnabledElement(element);
     const { viewport } = enabledElement;
 
-    return filterAnnotationsForDisplay(viewport, annotations);
+    return getAnnotationsForDisplay(viewport, annotations);
   }
 
   /**
