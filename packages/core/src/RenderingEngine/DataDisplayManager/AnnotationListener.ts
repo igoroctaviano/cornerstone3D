@@ -1,38 +1,6 @@
 import eventTarget from '../../eventTarget';
 import type { IDataDisplaySource } from './types';
-
-let ToolsEvents: any;
-let getAllAnnotations: (() => any[]) | null = null;
-try {
-  const toolsModule = require('@cornerstonejs/tools');
-  ToolsEvents = toolsModule.Enums?.Events;
-  if (toolsModule.annotation?.state?.getAllAnnotations) {
-    getAllAnnotations = toolsModule.annotation.state.getAllAnnotations;
-  }
-} catch (e) {
-  ToolsEvents = null;
-  getAllAnnotations = null;
-}
-
-const getAnnotationEvents = () => {
-  if (!ToolsEvents) {
-    return [];
-  }
-  return [
-    ToolsEvents.ANNOTATION_ADDED,
-    ToolsEvents.ANNOTATION_COMPLETED,
-    ToolsEvents.ANNOTATION_MODIFIED,
-    ToolsEvents.ANNOTATION_REMOVED,
-    ToolsEvents.ANNOTATION_SELECTION_CHANGE,
-    ToolsEvents.ANNOTATION_LOCK_CHANGE,
-    ToolsEvents.ANNOTATION_VISIBILITY_CHANGE,
-    ToolsEvents.ANNOTATION_RENDERED,
-    ToolsEvents.ANNOTATION_CUT_MERGE_PROCESS_COMPLETED,
-    ToolsEvents.ANNOTATION_INTERPOLATION_PROCESS_COMPLETED,
-    ToolsEvents.INTERPOLATED_ANNOTATIONS_REMOVED,
-  ];
-};
-
+import { Enums } from '@cornerstonejs/tools';
 export class AnnotationListener implements IDataDisplaySource<any> {
   private annotationEventListeners = new Map<string, EventListener>();
   private annotationsMap = new Map<string, any>();
@@ -47,20 +15,11 @@ export class AnnotationListener implements IDataDisplaySource<any> {
 
     this.annotationsMap.clear();
 
-    if (getAllAnnotations) {
-      const existingAnnotations = getAllAnnotations();
-      existingAnnotations.forEach((annotation) => {
-        if (annotation?.annotationUID) {
-          this.annotationsMap.set(annotation.annotationUID, annotation);
-          this.onAdd({ annotationUID: annotation.annotationUID, annotation });
-        }
-      });
-    }
-
-    const annotationEvents = getAnnotationEvents();
-    if (annotationEvents.length === 0) {
-      return this.annotationsMap;
-    }
+    const annotationEvents = [
+      Enums.Events.ANNOTATION_ADDED,
+      Enums.Events.ANNOTATION_MODIFIED,
+      Enums.Events.ANNOTATION_REMOVED,
+    ];
 
     const handleAnnotationAdded = (event: Event) => {
       const customEvent = event as CustomEvent;
@@ -101,11 +60,12 @@ export class AnnotationListener implements IDataDisplaySource<any> {
 
     annotationEvents.forEach((eventName) => {
       let handler: EventListener;
-      if (eventName === ToolsEvents.ANNOTATION_ADDED) {
+      if (eventName === Enums.Events.ANNOTATION_ADDED) {
+        console.debug('AnnotationListener: ANNOTATION_ADDED');
         handler = handleAnnotationAdded;
-      } else if (eventName === ToolsEvents.ANNOTATION_MODIFIED) {
+      } else if (eventName === Enums.Events.ANNOTATION_MODIFIED) {
         handler = handleAnnotationModified;
-      } else if (eventName === ToolsEvents.ANNOTATION_REMOVED) {
+      } else if (eventName === Enums.Events.ANNOTATION_REMOVED) {
         handler = handleAnnotationRemoved;
       } else {
         handler = handleOtherAnnotationEvent;

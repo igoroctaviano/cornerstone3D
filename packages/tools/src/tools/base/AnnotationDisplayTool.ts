@@ -73,6 +73,8 @@ abstract class AnnotationDisplayTool extends BaseTool {
     const enabledElement = getEnabledElement(element);
     const { viewport } = enabledElement;
 
+    // filterAnnotationsForDisplay now gets annotations from Data Display Manager source
+    // The annotations parameter is kept for backward compatibility but not used
     return filterAnnotationsForDisplay(viewport, annotations);
   }
 

@@ -88,6 +88,11 @@ import {
   addVolumesToViewports,
   addImageSlicesToViewports,
 } from './RenderingEngine/helpers';
+import {
+  dataDisplayManager,
+  initAnnotationsDataDisplayFilters,
+  initViewportDataDisplayFilters,
+} from './RenderingEngine/DataDisplayManager';
 
 export * from './loaders/decimatedVolumeLoader';
 
@@ -158,6 +163,10 @@ export {
   setVolumesForViewports,
   addVolumesToViewports,
   addImageSlicesToViewports,
+  // Data Display Manager
+  dataDisplayManager,
+  initAnnotationsDataDisplayFilters,
+  initViewportDataDisplayFilters,
   //
   imageLoadPoolManager as requestPoolManager,
   imageRetrievalPoolManager,

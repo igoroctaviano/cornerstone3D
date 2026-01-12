@@ -3,7 +3,6 @@ export type { IDataDisplayFilter, IDataDisplaySource } from './types';
 export { ViewportListener } from './ViewportListener';
 export { AnnotationListener } from './AnnotationListener';
 export {
-  initViewportFilters,
-  initAnnotationsFilters,
-  filterAnnotationsForDisplay,
+  initViewportDataDisplayFilters,
+  initAnnotationsDataDisplayFilters,
 } from './filters';

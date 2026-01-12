@@ -1,4 +1,9 @@
-import { eventTarget, Enums } from '@cornerstonejs/core';
+import {
+  eventTarget,
+  Enums,
+  initAnnotationsDataDisplayFilters,
+  initViewportDataDisplayFilters,
+} from '@cornerstonejs/core';
 import { getAnnotationManager } from './stateManagement/annotation/annotationState';
 import { Events as TOOLS_EVENTS } from './enums';
 import { addEnabledElement, removeEnabledElement } from './store';
@@ -34,6 +39,9 @@ export function init(defaultConfiguration = {} as Config): void {
   }
 
   setConfig(defaultConfiguration);
+
+  initAnnotationsDataDisplayFilters();
+  initViewportDataDisplayFilters();
 
   _addCornerstoneEventListeners();
   _addCornerstoneToolsEventListeners();
