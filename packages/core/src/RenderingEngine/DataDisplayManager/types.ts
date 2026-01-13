@@ -7,6 +7,18 @@ export interface IDataDisplayFilter {
 }
 
 export interface IDataDisplaySource<T> {
-  init: (onDelete: any, onUpdate: any, onAdd: any) => Map<string, T>;
+  init: () => Map<string, T>;
   destroy: (values: Map<string, T>) => void;
+}
+
+export interface IDataDisplayFilterInstance {
+  id: string;
+  filter: IDataDisplayFilter;
+  dependsOn: any;
+  sourceId: string;
+}
+
+export interface IDataDisplayFilterOptions {
+  sourceId: string;
+  dependsOn: string[];
 }

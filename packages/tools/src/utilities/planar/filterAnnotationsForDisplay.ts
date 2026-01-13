@@ -1,18 +1,16 @@
 import type { Types } from '@cornerstonejs/core';
-import {
-  dataDisplayManager,
-} from '@cornerstonejs/core';
+import { dataDisplayManager } from '@cornerstonejs/core';
 
 import type { Annotations } from '../../types';
 
 /**
  * Given the viewport, it filters the annotations and only
  * return those annotation that should be displayed on the viewport.
- * 
+ *
  * Annotations are automatically fetched from the AnnotationListener source
  * via the Data Display Manager. The annotations parameter is kept for backward
  * compatibility but is not used.
- * 
+ *
  * @param viewport - The viewport
  * @param annotations - Deprecated: kept for backward compatibility, not used
  * @param filterOptions - Filter options
@@ -23,6 +21,8 @@ export default function filterAnnotationsForDisplay(
   annotations?: Annotations,
   filterOptions: Types.ReferenceCompatibleOptions = {}
 ): Annotations {
-  const result = dataDisplayManager.filterData('annotations', { viewportId: viewport.id });
+  const result = dataDisplayManager.filterData('filterAnnotationsForDisplay', {
+    viewportId: viewport.id,
+  });
   return result as Annotations;
 }

@@ -13,11 +13,7 @@ export class ViewportListener implements IDataDisplaySource<any> {
   private onUpdate: any;
   private onAdd: any;
 
-  init(onDelete: any, onUpdate: any, onAdd: any): Map<string, any> {
-    this.onDelete = onDelete;
-    this.onUpdate = onUpdate;
-    this.onAdd = onAdd;
-
+  init(): Map<string, any> {
     const viewportsMap = new Map<string, any>();
 
     const subscribeToViewportEvents = (
@@ -37,7 +33,6 @@ export class ViewportListener implements IDataDisplaySource<any> {
           event: customEvent.type,
           detail: customEvent.detail,
         };
-        this.onUpdate(viewportData);
       };
 
       Array.from(Object.values(Events)).forEach((eventName) => {
@@ -47,7 +42,6 @@ export class ViewportListener implements IDataDisplaySource<any> {
 
       this.viewportEventListeners.set(viewportId, listeners);
       viewportsMap.set(viewportId, { viewportId, element });
-      this.onAdd({ viewportId, element });
     };
 
     const unsubscribeFromViewportEvents = (
@@ -67,7 +61,6 @@ export class ViewportListener implements IDataDisplaySource<any> {
       }
 
       this.viewportEventListeners.delete(viewportId);
-      this.onDelete({ viewportId });
     };
 
     const handleElementEnabled = (evt: Event) => {
@@ -112,7 +105,6 @@ export class ViewportListener implements IDataDisplaySource<any> {
           viewportData.element.removeEventListener(eventName, listener);
         });
       }
-      this.onDelete({ viewportId });
     });
 
     this.viewportEventListeners.clear();

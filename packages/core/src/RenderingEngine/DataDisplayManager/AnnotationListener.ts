@@ -8,11 +8,7 @@ export class AnnotationListener implements IDataDisplaySource<any> {
   private onUpdate: any;
   private onAdd: any;
 
-  init(onDelete: any, onUpdate: any, onAdd: any): Map<string, any> {
-    this.onDelete = onDelete;
-    this.onUpdate = onUpdate;
-    this.onAdd = onAdd;
-
+  init(): Map<string, any> {
     this.annotationsMap.clear();
 
     const annotationEvents = [
@@ -26,8 +22,6 @@ export class AnnotationListener implements IDataDisplaySource<any> {
       const { annotation } = customEvent.detail;
       if (annotation?.annotationUID) {
         this.annotationsMap.set(annotation.annotationUID, annotation);
-        this.onAdd({ annotationUID: annotation.annotationUID, annotation });
-        this.onUpdate({ annotationUID: annotation.annotationUID, annotation });
       }
     };
 
@@ -36,7 +30,6 @@ export class AnnotationListener implements IDataDisplaySource<any> {
       const { annotation } = customEvent.detail;
       if (annotation?.annotationUID) {
         this.annotationsMap.set(annotation.annotationUID, annotation);
-        this.onUpdate({ annotationUID: annotation.annotationUID, annotation });
       }
     };
 
@@ -45,7 +38,6 @@ export class AnnotationListener implements IDataDisplaySource<any> {
       const { annotation } = customEvent.detail;
       if (annotation?.annotationUID) {
         this.annotationsMap.delete(annotation.annotationUID);
-        this.onDelete({ annotationUID: annotation.annotationUID, annotation });
       }
     };
 
@@ -55,13 +47,11 @@ export class AnnotationListener implements IDataDisplaySource<any> {
         event: customEvent.type,
         detail: customEvent.detail,
       };
-      this.onUpdate(annotationData);
     };
 
     annotationEvents.forEach((eventName) => {
       let handler: EventListener;
       if (eventName === Enums.Events.ANNOTATION_ADDED) {
-        console.debug('AnnotationListener: ANNOTATION_ADDED');
         handler = handleAnnotationAdded;
       } else if (eventName === Enums.Events.ANNOTATION_MODIFIED) {
         handler = handleAnnotationModified;
