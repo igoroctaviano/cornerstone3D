@@ -1,12 +1,16 @@
 import eventTarget from '../../eventTarget';
 import type { IDataDisplaySource } from './types';
 import { Enums } from '@cornerstonejs/tools';
+import { dataDisplayManager } from './DataDisplayManager';
+
 export class AnnotationListener implements IDataDisplaySource<any> {
   private annotationEventListeners = new Map<string, EventListener>();
   private annotationsMap = new Map<string, any>();
-  private onDelete: any;
-  private onUpdate: any;
-  private onAdd: any;
+  private sourceId: string;
+
+  constructor(sourceId: string = 'annotations') {
+    this.sourceId = sourceId;
+  }
 
   init(): Map<string, any> {
     this.annotationsMap.clear();
@@ -23,6 +27,7 @@ export class AnnotationListener implements IDataDisplaySource<any> {
       if (annotation?.annotationUID) {
         this.annotationsMap.set(annotation.annotationUID, annotation);
       }
+      dataDisplayManager.invalidateBySource(this.sourceId);
     };
 
     const handleAnnotationModified = (event: Event) => {
@@ -31,6 +36,7 @@ export class AnnotationListener implements IDataDisplaySource<any> {
       if (annotation?.annotationUID) {
         this.annotationsMap.set(annotation.annotationUID, annotation);
       }
+      dataDisplayManager.invalidateBySource(this.sourceId);
     };
 
     const handleAnnotationRemoved = (event: Event) => {
@@ -39,26 +45,17 @@ export class AnnotationListener implements IDataDisplaySource<any> {
       if (annotation?.annotationUID) {
         this.annotationsMap.delete(annotation.annotationUID);
       }
-    };
-
-    const handleOtherAnnotationEvent = (event: Event) => {
-      const customEvent = event as CustomEvent;
-      const annotationData = {
-        event: customEvent.type,
-        detail: customEvent.detail,
-      };
+      dataDisplayManager.invalidateBySource(this.sourceId);
     };
 
     annotationEvents.forEach((eventName) => {
-      let handler: EventListener;
+      let handler: EventListener = () => {};
       if (eventName === Enums.Events.ANNOTATION_ADDED) {
         handler = handleAnnotationAdded;
       } else if (eventName === Enums.Events.ANNOTATION_MODIFIED) {
         handler = handleAnnotationModified;
       } else if (eventName === Enums.Events.ANNOTATION_REMOVED) {
         handler = handleAnnotationRemoved;
-      } else {
-        handler = handleOtherAnnotationEvent;
       }
 
       eventTarget.addEventListener(eventName, handler);

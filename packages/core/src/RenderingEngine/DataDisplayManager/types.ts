@@ -16,6 +16,7 @@ export interface IDataDisplayFilterInstance {
   filter: IDataDisplayFilter;
   dependsOn: any;
   sourceId: string;
+  getData: () => any;
 }
 
 export interface IDataDisplayFilterOptions {

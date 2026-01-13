@@ -2,6 +2,8 @@ import { getRenderingEngines } from '../getRenderingEngine';
 import eventTarget from '../../eventTarget';
 import Events from '../../enums/Events';
 import type { IDataDisplaySource } from './types';
+import { dataDisplayManager } from './DataDisplayManager';
+
 export class ViewportListener implements IDataDisplaySource<any> {
   private viewportEventListeners = new Map<
     string,
@@ -9,9 +11,11 @@ export class ViewportListener implements IDataDisplaySource<any> {
   >();
   private elementEnabledListener: EventListener | null = null;
   private elementDisabledListener: EventListener | null = null;
-  private onDelete: any;
-  private onUpdate: any;
-  private onAdd: any;
+  private sourceId: string;
+
+  constructor(sourceId: string = 'viewports') {
+    this.sourceId = sourceId;
+  }
 
   init(): Map<string, any> {
     const viewportsMap = new Map<string, any>();
@@ -26,14 +30,7 @@ export class ViewportListener implements IDataDisplaySource<any> {
 
       const listeners = new Map<string, EventListener>();
 
-      const handleViewportEvent = (event: Event) => {
-        const customEvent = event as CustomEvent;
-        const viewportData = {
-          viewportId,
-          event: customEvent.type,
-          detail: customEvent.detail,
-        };
-      };
+      const handleViewportEvent: EventListener = () => {};
 
       Array.from(Object.values(Events)).forEach((eventName) => {
         element.addEventListener(eventName, handleViewportEvent);
@@ -67,12 +64,14 @@ export class ViewportListener implements IDataDisplaySource<any> {
       const customEvent = evt as CustomEvent;
       const { element, viewportId } = customEvent.detail;
       subscribeToViewportEvents(element, viewportId);
+      dataDisplayManager.invalidateBySource(this.sourceId);
     };
 
     const handleElementDisabled = (evt: Event) => {
       const customEvent = evt as CustomEvent;
       const { viewportId } = customEvent.detail;
       unsubscribeFromViewportEvents(viewportId, viewportsMap);
+      dataDisplayManager.invalidateBySource(this.sourceId);
     };
 
     eventTarget.addEventListener(Events.ELEMENT_ENABLED, handleElementEnabled);

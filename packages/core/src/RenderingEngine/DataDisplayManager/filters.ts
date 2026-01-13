@@ -86,11 +86,15 @@ function filterAnnotationsForDisplay(dependsOn: any): IDataDisplayFilter {
  * Initialize the viewport filters
  */
 export function initViewportDataDisplayFilters() {
-  dataDisplayManager.registerSource('viewports', new ViewportListener());
+  const viewportsSourceId = 'viewports';
+  dataDisplayManager.registerSource(
+    viewportsSourceId,
+    new ViewportListener(viewportsSourceId)
+  );
 
   dataDisplayManager.registerFilter('viewportId', filterViewportById, {
-    sourceId: 'viewports',
-    dependsOn: ['viewports'],
+    sourceId: viewportsSourceId,
+    dependsOn: [viewportsSourceId],
   });
 }
 
@@ -98,11 +102,15 @@ export function initViewportDataDisplayFilters() {
  * Initialize the annotations filters
  */
 export function initAnnotationsDataDisplayFilters() {
-  dataDisplayManager.registerSource('annotations', new AnnotationListener());
+  const annotationsSourceId = 'annotations';
+  dataDisplayManager.registerSource(
+    annotationsSourceId,
+    new AnnotationListener(annotationsSourceId)
+  );
 
   dataDisplayManager.registerFilter(
     'filterAnnotationsForDisplay' /** Same name as the source filter id for now */,
     filterAnnotationsForDisplay,
-    { sourceId: 'annotations', dependsOn: ['viewports'] }
+    { sourceId: annotationsSourceId, dependsOn: ['viewports'] }
   );
 }
