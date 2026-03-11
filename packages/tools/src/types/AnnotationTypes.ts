@@ -53,6 +53,11 @@ export type Annotation = {
   /** A unique identifier for this annotation */
   annotationUID?: string;
   /**
+   * The IDs of the groups this annotation belongs to.
+   * If not set, annotation belongs to the default group only.
+   */
+  groupIds?: string[];
+  /**
    * Parent annotation UID
    *
    * An annotation may have a parent annotation when it is, for example, a

@@ -7,18 +7,36 @@ export type BaseEventDetail = {
   renderingEngineId: string;
 };
 
-/**
- * An annotation group
- */
+export interface AnnotationGroupOptions {
+  isDefault?: boolean;
+  color?: string;
+}
 
 export default class AnnotationGroup {
+  public readonly id: string;
+  public name: string;
+  public readonly isDefault: boolean;
+  public color?: string;
+
   private annotationUIDs = new Set<string>();
   private _isVisible = true;
 
   public visibleFilter: (uid: string) => boolean;
 
-  constructor() {
+  constructor(id: string, name: string, options: AnnotationGroupOptions = {}) {
+    this.id = id;
+    this.name = name;
+    this.isDefault = options.isDefault || false;
+    this.color = options.color;
     this.visibleFilter = this.unboundVisibleFilter.bind(this);
+  }
+
+  public rename(newName: string): void {
+    this.name = newName;
+  }
+
+  public setColor(color: string | undefined): void {
+    this.color = color;
   }
 
   /**
